@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>colanta_backend</RootNamespace>
+    <PreserveCompilationReferences>true</PreserveCompilationReferences>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="App\Orders\Infraestructure\Mails\NewOrderMail.cshtml" />
+    <Content Remove="App\Products\Infraestructure\Mails\InvalidBrandMail.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentEmail.Core" Version="3.0.2" />
+    <PackageReference Include="FluentEmail.Razor" Version="3.0.2" />
+    <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Antiforgery" Version="2.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NCrontab.Signed" Version="3.3.2" />
+    <PackageReference Include="Quartz" Version="3.3.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="App\GiftCards\Controllers\Dtos\" />
+    <Folder Include="App\Inventory\Application\" />
+    <Folder Include="App\Orders\SiesaOrders\Application\" />
+    <Folder Include="App\Prices\Application\" />
+    <Folder Include="App\Promotions\Application\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+    <None Include="App\Orders\Infraestructure\Mails\NewOrderMail.cshtml" />
+    <None Include="App\Products\Infraestructure\Mails\InvalidBrandMail.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="App\Orders\Infraestructure\Mails\NewOrderMail.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="App\Orders\Infraestructure\Mails\NewOrderMail.cshtml" />
+  </ItemGroup>
+
+</Project>

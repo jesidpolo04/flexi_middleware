@@ -1,0 +1,52 @@
+﻿namespace colanta_backend.App.Categories.Infraestructure
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using System.Net.Http.Headers;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using Categories.Domain;
+    using Shared.Domain;
+    using Shared.Infraestructure;
+    using Microsoft.Extensions.Configuration;
+
+    public class CategoriesMockSiesaRepository : Domain.CategoriesSiesaRepository
+    {
+        private IConfiguration configuration;
+        private HttpClient httpClient;
+        private SiesaAuth siesaAuth;
+        public CategoriesMockSiesaRepository(IConfiguration configuration)
+        {
+            this.configuration = configuration;
+            this.httpClient = new HttpClient();
+            this.siesaAuth = new SiesaAuth(configuration);
+        }
+        public async Task<Category[]> getAllCategories()
+        {
+            await this.setHeaders();
+            string endpoint = "/categorias";
+            HttpResponseMessage siesaResponse = await this.httpClient.GetAsync("https://tysa.co/dation/interactuar/cate.php");
+            if (!siesaResponse.IsSuccessStatusCode)
+            {
+                throw new SiesaException(siesaResponse, $"Siesa respondió con status: {siesaResponse.StatusCode}");
+            }
+            string siesaBodyResponse = await siesaResponse.Content.ReadAsStringAsync();
+            SiesaCategoriesDto siesaCategoriesDto = JsonSerializer.Deserialize<SiesaCategoriesDto>(siesaBodyResponse);
+            List<Category> categories = new List<Category>();
+            foreach(SiesaCategoryDto siesaCategoryDto in siesaCategoriesDto.familias)
+            {
+                Console.WriteLine($"id: {siesaCategoryDto.id}, nombre: {siesaCategoryDto.nombre}");
+                categories.Add(siesaCategoryDto.toCategory());
+            }
+            Console.WriteLine($"total categorias { categories.Count }");
+            return categories.ToArray();
+        }
+
+        private async Task setHeaders()
+        {
+            this.httpClient.DefaultRequestHeaders.Remove("Authorization");
+            this.httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + await this.siesaAuth.getToken());
+        }
+    }
+}
