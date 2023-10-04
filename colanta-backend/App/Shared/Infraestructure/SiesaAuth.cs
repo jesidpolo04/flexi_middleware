@@ -35,8 +35,8 @@
             string password = this.configuration["SiesaPassword"];
             string endpoint = $"/api/Login/Login?usuario={user}&password={password}";
             string url = this.siesaUrl + endpoint;
-
-            HttpResponseMessage siesaResponse = await this.httpClient.PostAsync(url);
+            var content = new StringContent("");
+            HttpResponseMessage siesaResponse = await this.httpClient.PostAsync(url, content);
             if (!siesaResponse.IsSuccessStatusCode)
             {
                 throw new SiesaException(siesaResponse, $"Siesa respondió con status: {siesaResponse.StatusCode}");
