@@ -10,9 +10,9 @@
             this.siesaRepository = siesaRepository;
         }
 
-        public async Task<Sku[]> Invoke()
+        public async Task<Sku[]> Invoke(int page)
         {
-            return await this.siesaRepository.getAllSkus();
+            return await this.siesaRepository.getAllSkus(page);
         }
     }
 }

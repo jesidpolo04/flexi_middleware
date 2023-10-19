@@ -10,9 +10,9 @@
             this.siesaRepository = siesaRepository;
         }
 
-        public async Task<Product[]> Invoke()
+        public async Task<Product[]> Invoke(int page)
         {
-            return await this.siesaRepository.getAllProducts();
+            return await this.siesaRepository.getAllProducts(page);
         }
     }
 }
