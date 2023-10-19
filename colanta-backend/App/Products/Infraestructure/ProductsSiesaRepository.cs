@@ -28,11 +28,11 @@
             this.emailSender = emailSender;
         }
 
-        public async Task<Product[]> getAllProducts()
+        public async Task<Product[]> getAllProducts(int page)
         {
             //await this.setHeaders();
-            string endpoint = "/productos_solicitado";
-            HttpResponseMessage siesaResponse = await this.httpClient.GetAsync("https://tysa.co/dation/interactuar/prod_sol.php");
+            string endpoint = $"/productos_solicitado?pagina={page}";
+            HttpResponseMessage siesaResponse = await this.httpClient.GetAsync($"{configuration["SiesaUrl"]}{endpoint}");
             if (!siesaResponse.IsSuccessStatusCode)
             {
                 throw new SiesaException(siesaResponse, $"Siesa respondió con status: {siesaResponse.StatusCode}");
@@ -47,10 +47,10 @@
             return products.ToArray();
         }
 
-        public async Task<Sku[]> getAllSkus()
+        public async Task<Sku[]> getAllSkus(int page)
         {
             List<Sku> skus = new List<Sku>();
-            Product[] allProducts = await this.getAllProducts();
+            Product[] allProducts = await this.getAllProducts(page);
             foreach(Product product in allProducts)
             {
                 foreach(Sku sku in product.skus)

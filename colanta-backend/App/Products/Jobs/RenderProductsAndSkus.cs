@@ -78,212 +78,213 @@
             this.jsonOptions = new JsonSerializerOptions();
             this.jsonOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
             this.jsonOptions.ReferenceHandler = ReferenceHandler.Preserve;
-            
+
         }
 
         public async Task Invoke()
         {
             try
             {
-                this.console.processStartsAt(processName, DateTime.Now);
-
-                Product[] allSiesaProducts = await siesaRepository.getAllProducts();
-                Sku[] allSiesaSkus = await siesaRepository.getAllSkus();
-                this.obtainedSkus = allSiesaSkus.Length;
-                this.details.Add(new Detail("siesa", "obtener todos los skus", JsonSerializer.Serialize(allSiesaSkus, jsonOptions), null, true));
-
-                Product[] deltaProducts = await productsLocalRepository.getDeltaProducts(allSiesaProducts);
-                Sku[] deltaSkus = await skusLocalRepository.getDeltaSkus(allSiesaSkus);
-
-                foreach (Product deltaProduct in deltaProducts)
+                console.processStartsAt(processName, DateTime.Now);
+                int page = 1;
+                while (true)
                 {
                     try
                     {
-                        deltaProduct.is_active = false;
-                    }
-                    catch (VtexException vtexException)
-                    {
-                        deltaProduct.is_active = true;
-                        this.console.throwException(vtexException.Message);
-                        await this.logger.writelog(vtexException);
-                    }
-                    catch(Exception exception)
-                    {
-                        deltaProduct.is_active = true;
-                        this.console.throwException(exception.Message);
-                        await this.logger.writelog(exception);
-                    }
-                }
-                await productsLocalRepository.updateProducts(deltaProducts);
+                        Product[] allSiesaProducts = await siesaRepository.getAllProducts(page);
+                        Sku[] allSiesaSkus = await siesaRepository.getAllSkus(page);
+                        this.obtainedSkus = allSiesaSkus.Length;
+                        this.details.Add(new Detail("siesa", "obtener todos los skus", JsonSerializer.Serialize(allSiesaSkus, jsonOptions), null, true));
 
-                foreach (Sku deltaSku in deltaSkus)
-                {
-                    try
-                    {
-                        deltaSku.is_active = false;
-                        await skusVtexRepository.changeSkuState((int)deltaSku.vtex_id, false);
-                        this.inactivatedSkus.Add(deltaSku);
-                        this.details.Add(new Detail(
-                                origin: "vtex",
-                                action: "actualizar estado en vtex",
-                                content: null,
-                                description: null,
-                                success: true
-                            ));
-                    }
-                    catch (VtexException vtexException)
-                    {
-                        deltaSku.is_active = true;
-                        this.console.throwException(vtexException.Message);
-                        this.details.Add(new Detail(
-                                origin: "vtex",
-                                action: vtexException.requestUrl,
-                                content: vtexException.responseBody,
-                                description: vtexException.Message,
-                                success: false
-                                ));
-                        await this.logger.writelog(vtexException);
+                        Product[] deltaProducts = await productsLocalRepository.getDeltaProducts(allSiesaProducts);
+                        Sku[] deltaSkus = await skusLocalRepository.getDeltaSkus(allSiesaSkus);
+
+                        foreach (Product deltaProduct in deltaProducts)
+                        {
+                            try
+                            {
+                                deltaProduct.is_active = false;
+                            }
+                            catch (VtexException vtexException)
+                            {
+                                deltaProduct.is_active = true;
+                                this.console.throwException(vtexException.Message);
+                                await this.logger.writelog(vtexException);
+                            }
+                            catch (Exception exception)
+                            {
+                                deltaProduct.is_active = true;
+                                this.console.throwException(exception.Message);
+                                await this.logger.writelog(exception);
+                            }
+                        }
+                        await productsLocalRepository.updateProducts(deltaProducts);
+
+                        foreach (Sku deltaSku in deltaSkus)
+                        {
+                            try
+                            {
+                                deltaSku.is_active = false;
+                                await skusVtexRepository.changeSkuState((int)deltaSku.vtex_id, false);
+                                this.inactivatedSkus.Add(deltaSku);
+                                this.details.Add(new Detail(
+                                        origin: "vtex",
+                                        action: "actualizar estado en vtex",
+                                        content: null,
+                                        description: null,
+                                        success: true
+                                    ));
+                            }
+                            catch (VtexException vtexException)
+                            {
+                                deltaSku.is_active = true;
+                                this.console.throwException(vtexException.Message);
+                                this.details.Add(new Detail(
+                                        origin: "vtex",
+                                        action: vtexException.requestUrl,
+                                        content: vtexException.responseBody,
+                                        description: vtexException.Message,
+                                        success: false
+                                        ));
+                                await this.logger.writelog(vtexException);
+                            }
+                            catch (Exception exception)
+                            {
+                                deltaSku.is_active = true;
+                                this.console.throwException(exception.Message);
+                                await this.logger.writelog(exception);
+                            }
+
+                        }
+                        await skusLocalRepository.updateSkus(deltaSkus);
+
+                        foreach (Product siesaProduct in allSiesaProducts)
+                        {
+                            try
+                            {
+                                this.validProduct(siesaProduct);
+                            }
+                            catch (InvalidBrandException exception)
+                            {
+                                this.console.throwException(exception.Message);
+                                this.invalidBrandMail.sendMail(exception);
+                                await this.logger.writelog(exception);
+                                this.failedProducts.Add(siesaProduct);
+                                continue;
+                            }
+                            catch (InvalidCategoryException exception)
+                            {
+                                this.console.throwException(exception.Message);
+                                this.invalidCategoryMail.sendMail(exception);
+                                await this.logger.writelog(exception);
+                                this.failedProducts.Add(siesaProduct);
+                                continue;
+                            }
+
+                            Product? localProduct = await productsLocalRepository.getProductBySiesaId(siesaProduct.siesa_id);
+
+                            if (localProduct != null && localProduct.is_active == false)
+                            {
+                                //hay que activar
+                            }
+
+                            if (localProduct != null && localProduct.is_active == true)
+                            {
+                                //todo ok
+                            }
+
+                            if (localProduct == null)
+                            {
+                                try
+                                {
+                                    localProduct = await productsLocalRepository.saveProduct(siesaProduct);
+                                    Product vtexProduct = await productsVtexRepository.saveProduct(localProduct);
+                                    localProduct.vtex_id = vtexProduct.vtex_id;
+                                    await productsLocalRepository.updateProduct(localProduct);
+                                }
+                                catch (VtexException vtexException)
+                                {
+                                    this.console.throwException(vtexException.Message);
+                                    await this.logger.writelog(vtexException);
+                                    /* this.failedProducts.Add(siesaProduct); */
+                                }
+                                catch (Exception exception)
+                                {
+                                    this.console.throwException(exception.Message);
+                                    await this.logger.writelog(exception);
+                                    /* this.failedProducts.Add(siesaProduct); */
+                                }
+                            }
+                        }
+
+                        foreach (Sku siesaSku in allSiesaSkus)
+                        {
+
+                            if (this.isFailedProduct(siesaSku.product.siesa_id))
+                            {
+                                continue;
+                            }
+
+                            Sku? localSku = await skusLocalRepository.getSkuBySiesaId(siesaSku.siesa_id);
+
+                            if (localSku != null && localSku.is_active == false)
+                            {
+                                this.inactiveSkus.Add(localSku);
+                            }
+
+                            if (localSku != null && localSku.is_active == true)
+                            {
+                                this.notProccecedSkus.Add(localSku);
+                            }
+
+                            if (localSku == null)
+                            {
+                                try
+                                {
+                                    localSku = await skusLocalRepository.saveSku(siesaSku);
+                                    Sku vtexSku = await skusVtexRepository.saveSku(localSku);
+                                    localSku.vtex_id = vtexSku.vtex_id;
+                                    await skusLocalRepository.updateSku(localSku);
+
+                                    this.loadSkus.Add(localSku);
+                                    this.details.Add(new Detail(
+                                        origin: "vtex",
+                                        action: "crear sku",
+                                        content: null,
+                                        description: null,
+                                        success: true
+                                    ));
+                                }
+                                catch (VtexException vtexException)
+                                {
+                                    this.console.throwException(vtexException.Message);
+                                    this.failedSkus.Add(siesaSku);
+                                    this.details.Add(new Detail(
+                                        origin: "vtex",
+                                        action: vtexException.requestUrl,
+                                        content: vtexException.responseBody,
+                                        description: vtexException.Message,
+                                        success: false
+                                    ));
+                                    await this.logger.writelog(vtexException);
+                                }
+                                catch (Exception exception)
+                                {
+                                    this.failedSkus.Add(siesaSku);
+                                    this.console.throwException(exception.Message);
+                                    await this.logger.writelog(exception);
+                                }
+                            }
+                        }
                     }
                     catch (Exception exception)
                     {
-                        deltaSku.is_active = true;
-                        this.console.throwException(exception.Message);
-                        await this.logger.writelog(exception);
+                        break;
                     }
-
+                    page ++;
                 }
-                await skusLocalRepository.updateSkus(deltaSkus);
-
-                foreach (Product siesaProduct in allSiesaProducts)
-                {
-                    try
-                    {
-                        this.validProduct(siesaProduct);
-                    }
-                    catch (InvalidBrandException exception)
-                    {
-                        this.console.throwException(exception.Message);
-                        this.invalidBrandMail.sendMail(exception);
-                        await this.logger.writelog(exception);
-                        this.failedProducts.Add(siesaProduct);
-                        continue;
-                    }
-                    catch (InvalidCategoryException exception)
-                    {
-                        this.console.throwException(exception.Message);
-                        this.invalidCategoryMail.sendMail(exception);
-                        await this.logger.writelog(exception);
-                        this.failedProducts.Add(siesaProduct);
-                        continue;
-                    }
-                    
-                    Product? localProduct = await productsLocalRepository.getProductBySiesaId(siesaProduct.siesa_id);
-
-                    if (localProduct != null && localProduct.is_active == false)
-                    {
-                        //hay que activar
-                    }
-
-                    if (localProduct != null && localProduct.is_active == true)
-                    {
-                        //todo ok
-                    }
-
-                    if (localProduct == null)
-                    {
-                        try
-                        {
-                            localProduct = await productsLocalRepository.saveProduct(siesaProduct);
-                            Product vtexProduct = await productsVtexRepository.saveProduct(localProduct);
-                            localProduct.vtex_id = vtexProduct.vtex_id;
-                            await productsLocalRepository.updateProduct(localProduct);
-                        }
-                        catch (VtexException vtexException)
-                        {
-                            this.console.throwException(vtexException.Message);
-                            await this.logger.writelog(vtexException);
-                            /* this.failedProducts.Add(siesaProduct); */
-                        }
-                        catch (Exception exception)
-                        {
-                            this.console.throwException(exception.Message);
-                            await this.logger.writelog(exception);
-                            /* this.failedProducts.Add(siesaProduct); */
-                        }
-                    }
-                }
-
-                foreach (Sku siesaSku in allSiesaSkus)
-                {
-                    
-                    if (this.isFailedProduct(siesaSku.product.siesa_id))
-                    {
-                        continue;
-                    }
-
-                    Sku? localSku = await skusLocalRepository.getSkuBySiesaId(siesaSku.siesa_id);
-
-                    if (localSku != null && localSku.is_active == false)
-                    {
-                        this.inactiveSkus.Add(localSku);
-                    }
-
-                    if (localSku != null && localSku.is_active == true)
-                    {
-                        this.notProccecedSkus.Add(localSku);
-                    }
-
-                    if (localSku == null)
-                    {
-                        try
-                        {
-                            localSku = await skusLocalRepository.saveSku(siesaSku);
-                            Sku vtexSku = await skusVtexRepository.saveSku(localSku);
-                            localSku.vtex_id = vtexSku.vtex_id;
-                            await skusLocalRepository.updateSku(localSku);
-
-                            this.loadSkus.Add(localSku);
-                            this.details.Add(new Detail(
-                                origin: "vtex",
-                                action: "crear sku",
-                                content: null,
-                                description: null,
-                                success: true
-                            ));
-                        }
-                        catch (VtexException vtexException)
-                        {
-                            this.console.throwException(vtexException.Message);
-                            this.failedSkus.Add(siesaSku);
-                            this.details.Add(new Detail(
-                                origin: "vtex",
-                                action: vtexException.requestUrl,
-                                content: vtexException.responseBody,
-                                description: vtexException.Message,
-                                success: false
-                            ));
-                            await this.logger.writelog(vtexException);
-                        }
-                        catch (Exception exception)
-                        {
-                            this.failedSkus.Add(siesaSku);
-                            this.console.throwException(exception.Message);
-                            await this.logger.writelog(exception);
-                        }
-                    }
-                }
-                this.processLogger.Log(
-                        name: this.processName,
-                        this.loadSkus.Count,
-                        this.failedSkus.Count,
-                        this.notProccecedSkus.Count + this.inactiveSkus.Count,
-                        this.obtainedSkus,
-                        JsonSerializer.Serialize(this.details, jsonOptions)
-                    );
-
-                this.console.processEndstAt(processName, DateTime.Now);
             }
-            catch(SiesaException exception)
+            catch (SiesaException exception)
             {
                 this.console.throwException(exception.Message);
                 this.details.Add(new Detail("siesa", exception.requestUrl, exception.responseBody, exception.Message, false));
@@ -298,7 +299,7 @@
                 await this.logger.writelog(exception);
                 this.console.processEndstAt(processName, DateTime.Now);
             }
-            catch(Exception exception)
+            catch (Exception exception)
             {
                 this.console.throwException(exception.Message);
                 this.processLogger.Log(
@@ -317,23 +318,23 @@
 
         private void validProduct(Product siesaProduct)
         {
-            if(siesaProduct.brand.id_siesa == null)
+            if (siesaProduct.brand.id_siesa == null)
             {
                 throw new InvalidBrandException("La marca fue nula", siesaProduct);
             }
-            if(siesaProduct.category.siesa_id == null)
+            if (siesaProduct.category.siesa_id == null)
             {
                 throw new InvalidCategoryException("La categoría fue nula", siesaProduct);
             }
 
             Brand brand = this.brandsLocalRepository.getBrandBySiesaId(siesaProduct.brand.id_siesa);
-            if(brand == null)
+            if (brand == null)
             {
                 throw new InvalidBrandException("La marca no existe en el middleware", siesaProduct);
             }
 
             Task<Category> category = this.categoriesLocalRepository.getCategoryBySiesaId(siesaProduct.category.siesa_id);
-            if(category.Result == null)
+            if (category.Result == null)
             {
                 throw new InvalidCategoryException("La categoría no existe en el middleware", siesaProduct);
             }
@@ -341,7 +342,7 @@
 
         private bool isFailedProduct(string productSiesaId)
         {
-            foreach(Product product in this.failedProducts)
+            foreach (Product product in this.failedProducts)
             {
                 if (product.siesa_id == productSiesaId)
                 {

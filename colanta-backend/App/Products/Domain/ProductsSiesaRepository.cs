@@ -3,7 +3,7 @@
     using System.Threading.Tasks;
     public interface ProductsSiesaRepository
     {
-        Task<Product[]> getAllProducts();
-        Task<Sku[]> getAllSkus();
+        Task<Product[]> getAllProducts(int page);
+        Task<Sku[]> getAllSkus(int page);
     }
 }
