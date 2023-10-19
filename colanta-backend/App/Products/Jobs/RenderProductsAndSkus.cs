@@ -97,8 +97,8 @@
                         Product[] deltaProducts = await productsLocalRepository.getDeltaProducts(allSiesaProducts);
                         Sku[] deltaSkus = await skusLocalRepository.getDeltaSkus(allSiesaSkus);
 
-                        console.writeLine($"Productos obtenidos pagina {page}: {allSiesaProducts}");
-                        console.writeLine($"Variaciones obtenidos pagina {page}: {allSiesaSkus}");
+                        console.writeLine($"Productos obtenidos pagina {page}: {allSiesaProducts.Length}");
+                        console.writeLine($"Variaciones obtenidos pagina {page}: {allSiesaSkus.Length}");
 
                         foreach (Product deltaProduct in deltaProducts)
                         {

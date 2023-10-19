@@ -132,17 +132,19 @@ namespace colanta_backend.App.Products.Infraestructure
             }
             string endpoint = "/api/catalog/pvt/stockkeepingunit";
             string url = "https://" + this.accountName + "." + this.vtexEnvironment + endpoint;
-            CreateVtexSkuDto requestBody = new CreateVtexSkuDto();
-            requestBody.ProductId = (int)sku.product.vtex_id;
-            requestBody.Name = sku.name;
-            requestBody.RefId = sku.concat_siesa_id;
-            requestBody.UnitMultiplier = sku.unit_multiplier;
-            requestBody.MeasurementUnit = sku.measurement_unit;
-            requestBody.IsActive = sku.is_active;
-            requestBody.PackagedHeight = sku.packaged_height;
-            requestBody.PackagedWidth = sku.packaged_width;
-            requestBody.PackagedLength = sku.packaged_length;
-            requestBody.PackagedWeightKg = sku.packaged_weight_kg;
+            CreateVtexSkuDto requestBody = new CreateVtexSkuDto
+            {
+                ProductId = (int)sku.product.vtex_id,
+                Name = sku.name,
+                RefId = sku.siesa_id,
+                UnitMultiplier = sku.unit_multiplier,
+                MeasurementUnit = sku.measurement_unit,
+                IsActive = sku.is_active,
+                PackagedHeight = sku.packaged_height,
+                PackagedWidth = sku.packaged_width,
+                PackagedLength = sku.packaged_length,
+                PackagedWeightKg = sku.packaged_weight_kg
+            };
 
             string jsonContent = JsonSerializer.Serialize(requestBody);
             HttpContent httpContent = new StringContent(jsonContent, encoding: System.Text.Encoding.UTF8, "application/json");
@@ -161,18 +163,20 @@ namespace colanta_backend.App.Products.Infraestructure
         {
             string endpoint = "/api/catalog/pvt/stockkeepingunit/" + sku.vtex_id;
             string url = "https://" + this.accountName + "." + this.vtexEnvironment + endpoint;
-            UpdateVtexSkuDto requestBody = new UpdateVtexSkuDto();
-            requestBody.Id = (int)sku.vtex_id;
-            requestBody.ProductId = (int)sku.product.vtex_id;
-            requestBody.Name = sku.name;
-            requestBody.RefId = sku.concat_siesa_id;
-            requestBody.UnitMultiplier = sku.unit_multiplier;
-            requestBody.MeasurementUnit = sku.measurement_unit;
-            requestBody.IsActive = sku.is_active;
-            requestBody.PackagedHeight = sku.packaged_height;
-            requestBody.PackagedWidth = sku.packaged_width;
-            requestBody.PackagedLength = sku.packaged_length;
-            requestBody.PackagedWeightKg = sku.packaged_weight_kg;
+            UpdateVtexSkuDto requestBody = new UpdateVtexSkuDto
+            {
+                Id = (int)sku.vtex_id,
+                ProductId = (int)sku.product.vtex_id,
+                Name = sku.name,
+                RefId = sku.siesa_id,
+                UnitMultiplier = sku.unit_multiplier,
+                MeasurementUnit = sku.measurement_unit,
+                IsActive = sku.is_active,
+                PackagedHeight = sku.packaged_height,
+                PackagedWidth = sku.packaged_width,
+                PackagedLength = sku.packaged_length,
+                PackagedWeightKg = sku.packaged_weight_kg
+            };
 
             string jsonContent = JsonSerializer.Serialize(requestBody);
             HttpContent httpContent = new StringContent(jsonContent, encoding: System.Text.Encoding.UTF8, "application/json");

@@ -30,68 +30,71 @@
         {
             if (this.tipo == 1)
             {
-                Product product = new Product();
-
-                product.type = this.tipo;
-                product.siesa_id = this.id;
-                product.concat_siesa_id = this.negocio + "_" + this.id;
-                product.name = this.nombre;
-                product.ref_id = this.referencia;
-                product.description = this.descripcion;
-                product.business = this.negocio;
+                Product product = new Product
+                {
+                    type = this.tipo,
+                    siesa_id = this.id,
+                    concat_siesa_id = this.negocio + "_" + this.id,
+                    name = this.nombre,
+                    ref_id = this.referencia,
+                    description = this.descripcion,
+                    business = this.negocio
+                };
                 product.setBrand(new Brand(null, id_siesa: this.id_marca));
                 product.setCategory(new Category("", siesa_id: this.id_linea));
 
-                Sku sku = new Sku();
-
+                Sku sku = new Sku
+                {    
+                    siesa_id = this.id,
+                    ean = this.ean,
+                    concat_siesa_id = this.negocio + "_" + this.id,
+                    name = this.nombre,
+                    ref_id = this.id,
+                    description = this.descripcion,
+                    measurement_unit = this.unidad_medida,
+                    packaged_height = this.dimensiones.alto_producto,
+                    packaged_width = this.dimensiones.ancho_producto,
+                    packaged_length = this.dimensiones.largo_producto,
+                    packaged_weight_kg = this.dimensiones.peso_bruto
+                };
                 sku.setProduct(product);
-                sku.siesa_id = this.id;
-                sku.ean = this.ean;
-                sku.concat_siesa_id = this.negocio + "_" + this.id + "_" + this.id;
-                sku.name = this.nombre;
-                sku.ref_id = this.referencia;
-                sku.description = this.descripcion;
-                sku.measurement_unit = this.unidad_medida;
-
-                sku.packaged_height = this.dimensiones.alto_producto;
-                sku.packaged_width = this.dimensiones.ancho_producto;
-                sku.packaged_length = this.dimensiones.largo_producto;
-                sku.packaged_weight_kg = this.dimensiones.peso_bruto;
-
                 product.addSku(sku);
 
                 return product;
             }
             else
             {
-                Product product = new Product();
-
-                product.type = this.tipo;
-                product.siesa_id = this.id;
-                product.concat_siesa_id = this.negocio + "_" + this.id;
-                product.name = this.nombre;
-                product.ref_id = this.referencia;
-                product.description = this.descripcion;
-                product.business = this.negocio;
+                Product product = new Product
+                {
+                    type = this.tipo,
+                    siesa_id = this.id,
+                    concat_siesa_id = this.negocio + "_" + this.id,
+                    name = this.nombre,
+                    ref_id = this.referencia,
+                    description = this.descripcion,
+                    business = this.negocio
+                };
                 product.setBrand(new Brand(null, id_siesa: this.id_marca));
                 product.setCategory(new Category("", siesa_id: this.id_linea));
 
 
                 foreach (VariacionDto variacionDto in this.variaciones)
                 {
-                    Sku sku = new Sku();
+                    Sku sku = new Sku
+                    {
+                        siesa_id = variacionDto.id,
+                        ean = variacionDto.ean,
+                        concat_siesa_id = this.negocio + "_" + variacionDto.id,
+                        name = variacionDto.nombre,
+                        description = this.descripcion,
+                        ref_id = variacionDto.id,
+                        measurement_unit = this.unidad_medida,
+                        packaged_height = variacionDto.dimensiones.alto_producto,
+                        packaged_width = variacionDto.dimensiones.ancho_producto,
+                        packaged_length = variacionDto.dimensiones.largo_producto,
+                        packaged_weight_kg = variacionDto.dimensiones.peso_bruto
+                    };
                     sku.setProduct(product);
-                    sku.siesa_id = variacionDto.id;
-                    sku.ean = variacionDto.ean;
-                    sku.concat_siesa_id = this.negocio + "_" + this.id + "_" + variacionDto.id;
-                    sku.name = variacionDto.nombre;
-                    sku.description = this.descripcion;
-                    sku.ref_id = variacionDto.referencia + "_" + variacionDto.id;
-                    sku.measurement_unit = this.unidad_medida;
-                    sku.packaged_height = variacionDto.dimensiones.alto_producto;
-                    sku.packaged_width = variacionDto.dimensiones.ancho_producto;
-                    sku.packaged_length = variacionDto.dimensiones.largo_producto;
-                    sku.packaged_weight_kg = variacionDto.dimensiones.peso_bruto;
 
                     product.addSku(sku);
                 }

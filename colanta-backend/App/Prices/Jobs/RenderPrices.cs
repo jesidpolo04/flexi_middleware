@@ -60,14 +60,6 @@
             {
                 this.console.processStartsAt(processName, DateTime.Now);
                 Price[] allSiesaPrices = await this.siesaRepository.getAllPrices(1);
-                this.details.Add(new Detail(
-                                    origin: "siesa",
-                                    action: "obtener todos los precios",
-                                    content: JsonSerializer.Serialize(allSiesaPrices, this.jsonOptions),
-                                    description: "petición de obtener todos los precios, completada con éxito.",
-                                    success: true
-                                    ));
-
                 foreach (Price siesaPrice in allSiesaPrices)
                 {
                     this.obtainedPrices ++;
@@ -97,13 +89,6 @@
                                 this.vtexRepository.savePrice(localPrice).Wait();
                                 this.updatePriceForMeasurementUnit(localPrice.sku.product, localPrice.price);
                                 this.loadPrices.Add(localPrice);
-                                this.details.Add(new Detail(
-                                            origin: "vtex",
-                                            action: "crear o actualizar precio",
-                                            content: JsonSerializer.Serialize(localPrice, this.jsonOptions),
-                                            description: "petición de crear o actualizar precio, completada con éxito.",
-                                            success: true
-                                            ));
                                 continue;
                             }
                             if (vtexPrice != null)

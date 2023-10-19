@@ -4,14 +4,12 @@ using System.Threading.Tasks;
 namespace colanta_backend.App.Products.Infraestructure
 {
     using System;
-    using System.Collections.Generic;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text.Json;
     using System.Threading.Tasks;
     using Products.Domain;
     using Shared.Domain;
-    using Shared.Infraestructure;
     using Microsoft.Extensions.Configuration;
     public class ProductsVtexRepository : Domain.ProductsVtexRepository
     {
@@ -128,13 +126,15 @@ namespace colanta_backend.App.Products.Infraestructure
             }
             string endpoint = "/api/catalog/pvt/product";
             string url = "https://" + this.accountName + "." + this.vtexEnvironment + endpoint;
-            CreateVtexProductDto requestBody = new CreateVtexProductDto();
-            requestBody.BrandId = product.brand.id_vtex;
-            requestBody.CategoryId = product.category.vtex_id;
-            requestBody.RefId = product.concat_siesa_id;
-            requestBody.Name = product.name;
-            requestBody.Description = product.description;
-            requestBody.IsActive = product.is_active;
+            CreateVtexProductDto requestBody = new CreateVtexProductDto
+            {
+                BrandId = product.brand.id_vtex,
+                CategoryId = product.category.vtex_id,
+                RefId = product.ref_id,
+                Name = product.name,
+                Description = product.description,
+                IsActive = product.is_active
+            };
             string jsonContent = JsonSerializer.Serialize(requestBody);
             HttpContent httpContent = new StringContent(jsonContent, encoding: System.Text.Encoding.UTF8, "application/json");
             HttpResponseMessage vtexResponse = await this.httpClient.PostAsync(url, httpContent);
@@ -144,8 +144,8 @@ namespace colanta_backend.App.Products.Infraestructure
             }
             string vtexResponseBody = await vtexResponse.Content.ReadAsStringAsync();
             CreatedVtexProductDto productDto = JsonSerializer.Deserialize<CreatedVtexProductDto>(vtexResponseBody);
-            if (product.business == "mercolanta") await this.associateProductToAStore((int)productDto.Id, TradePolicies.Mercolanta.id);
-            if (product.business == "agrocolanta") await this.associateProductToAStore((int)productDto.Id, TradePolicies.Agrocolanta.id);
+            /* if (product.business == "mercolanta") await this.associateProductToAStore((int)productDto.Id, TradePolicies.Mercolanta.id); */
+            /* if (product.business == "agrocolanta") await this.associateProductToAStore((int)productDto.Id, TradePolicies.Agrocolanta.id); */
             return productDto.getProductFromDto();
         }
 
