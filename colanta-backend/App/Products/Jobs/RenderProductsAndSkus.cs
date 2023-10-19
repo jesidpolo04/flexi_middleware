@@ -94,10 +94,11 @@
                         Product[] allSiesaProducts = await siesaRepository.getAllProducts(page);
                         Sku[] allSiesaSkus = await siesaRepository.getAllSkus(page);
                         this.obtainedSkus = allSiesaSkus.Length;
-                        this.details.Add(new Detail("siesa", "obtener todos los skus", JsonSerializer.Serialize(allSiesaSkus, jsonOptions), null, true));
-
                         Product[] deltaProducts = await productsLocalRepository.getDeltaProducts(allSiesaProducts);
                         Sku[] deltaSkus = await skusLocalRepository.getDeltaSkus(allSiesaSkus);
+
+                        console.writeLine($"Productos obtenidos pagina {page}: {allSiesaProducts}");
+                        console.writeLine($"Variaciones obtenidos pagina {page}: {allSiesaSkus}");
 
                         foreach (Product deltaProduct in deltaProducts)
                         {
@@ -245,15 +246,7 @@
                                     Sku vtexSku = await skusVtexRepository.saveSku(localSku);
                                     localSku.vtex_id = vtexSku.vtex_id;
                                     await skusLocalRepository.updateSku(localSku);
-
                                     this.loadSkus.Add(localSku);
-                                    this.details.Add(new Detail(
-                                        origin: "vtex",
-                                        action: "crear sku",
-                                        content: null,
-                                        description: null,
-                                        success: true
-                                    ));
                                 }
                                 catch (VtexException vtexException)
                                 {
@@ -279,10 +272,12 @@
                     }
                     catch (Exception exception)
                     {
+                        console.throwException(exception.Message);
                         break;
                     }
                     page ++;
                 }
+                this.console.processEndstAt(processName, DateTime.Now);
             }
             catch (SiesaException exception)
             {
