@@ -26,7 +26,7 @@
         {
             await this.setHeaders();
             string endpoint = "/categorias";
-            HttpResponseMessage siesaResponse = await this.httpClient.GetAsync("https://tysa.co/dation/interactuar/cate.php");
+            HttpResponseMessage siesaResponse = await this.httpClient.GetAsync($"{configuration["SiesaUrl"]}{endpoint}");
             if (!siesaResponse.IsSuccessStatusCode)
             {
                 throw new SiesaException(siesaResponse, $"Siesa respondió con status: {siesaResponse.StatusCode}");
