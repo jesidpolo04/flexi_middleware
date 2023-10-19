@@ -202,14 +202,13 @@
                         {
                             this.console.throwException(vtexException.Message);
                             await this.logger.writelog(vtexException);
-                            this.failedProducts.Add(siesaProduct);
+                            /* this.failedProducts.Add(siesaProduct); */
                         }
                         catch (Exception exception)
                         {
                             this.console.throwException(exception.Message);
                             await this.logger.writelog(exception);
-                            this.failedProducts.Add(siesaProduct);
-
+                            /* this.failedProducts.Add(siesaProduct); */
                         }
                     }
                 }
