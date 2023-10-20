@@ -13,9 +13,15 @@
 
         public Price getPriceFromDto()
         {
-            Price price = new Price();
+            Price price = new Price
+            {
+                price = basePrice,
+                cost_price = costPrice
+            };
 
-            price.price = basePrice;
+            if (listPrice.HasValue){
+                price.list_price = (decimal) listPrice;
+            }
             return price;
         }
     }

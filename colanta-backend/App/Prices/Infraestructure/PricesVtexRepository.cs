@@ -99,10 +99,13 @@ namespace colanta_backend.App.Prices.Infraestructure
             string endpoint = "/pricing/prices/" + price.sku.vtex_id;
             string url = "https://api.vtex.com/" + accountName;
 
-            SaveVtexPriceDto requestBody = new SaveVtexPriceDto();
-            requestBody.markup = 0;
-            requestBody.costPrice = null;
-            requestBody.basePrice = price.price;
+            SaveVtexPriceDto requestBody = new SaveVtexPriceDto
+            {
+                markup = null,
+                costPrice = price.cost_price,
+                basePrice = price.price,
+                listPrice = price.list_price
+            };
 
             string jsonContent = JsonSerializer.Serialize(requestBody);
             HttpContent httpContent = new StringContent(jsonContent, encoding: System.Text.Encoding.UTF8, "application/json");
@@ -121,10 +124,13 @@ namespace colanta_backend.App.Prices.Infraestructure
             string endpoint = "/pricing/prices/" + price.sku.vtex_id;
             string url = "https://api.vtex.com/" + accountName;
 
-            SaveVtexPriceDto requestBody = new SaveVtexPriceDto();
-            requestBody.markup = 0;
-            requestBody.costPrice = null;
-            requestBody.basePrice = price.price;
+            SaveVtexPriceDto requestBody = new SaveVtexPriceDto
+            {
+                markup = null,
+                costPrice = price.cost_price,
+                basePrice = price.price,
+                listPrice = price.list_price
+            };
 
             string jsonContent = JsonSerializer.Serialize(requestBody);
             HttpContent httpContent = new StringContent(jsonContent, encoding: System.Text.Encoding.UTF8, "application/json");

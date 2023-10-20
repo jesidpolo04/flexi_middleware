@@ -9,15 +9,16 @@
     using System.Collections.Generic;
     using System.Text.Json;
     using System;
+    using Microsoft.AspNetCore.Mvc.RazorPages;
+
     public class RenderPrices : IDisposable
     {
         public string processName = "Renderizado de precios";
-        public PricesRepository localRepository; 
-        public PricesVtexRepository vtexRepository ;
+        public PricesRepository localRepository;
+        public PricesVtexRepository vtexRepository;
         public PricesSiesaRepository siesaRepository;
         public SpecificationsVtexRepository specificationsVtexRepository;
         public SkusRepository skusLocalRepository;
-        public IProcess processLogger;
         public ILogger logger;
         private IRenderPricesMail mail;
 
@@ -37,7 +38,6 @@
             PricesSiesaRepository siesaRepository,
             SpecificationsVtexRepository specificationsVtexRepository,
             SkusRepository skusLocalRepository,
-            IProcess processLogger,
             ILogger logger,
             IRenderPricesMail mail)
         {
@@ -46,7 +46,6 @@
             this.siesaRepository = siesaRepository;
             this.skusLocalRepository = skusLocalRepository;
             this.specificationsVtexRepository = specificationsVtexRepository;
-            this.processLogger = processLogger;
             this.logger = logger;
             this.mail = mail;
 
@@ -59,200 +58,135 @@
             try
             {
                 this.console.processStartsAt(processName, DateTime.Now);
-                Price[] allSiesaPrices = await this.siesaRepository.getAllPrices(1);
-                foreach (Price siesaPrice in allSiesaPrices)
+                int page = 1;
+                while (true)
                 {
-                    this.obtainedPrices ++;
-
-                    if (!this.skuExist(siesaPrice))
+                    try
                     {
-                        this.notProccecedPrices.Add(siesaPrice);
-                        continue;
-                    }
-
-                    Price localPrice = this.localRepository.getPriceBySkuConcatSiesaId(siesaPrice.sku_concat_siesa_id).Result;
-
-                    if (localPrice != null)
-                    {
-                        try
+                        Price[] allSiesaPrices = await this.siesaRepository.getAllPrices(page);
+                        foreach (Price siesaPrice in allSiesaPrices)
                         {
-                            if (localPrice.price != siesaPrice.price)
-                            {
-                                localPrice.price = siesaPrice.price;
-                                await this.localRepository.updatePrice(localPrice);
-                            }
+                            this.obtainedPrices++;
 
-                            Price vtexPrice = this.vtexRepository.getPriceByVtexId(localPrice.sku.vtex_id).Result;
-
-                            if (vtexPrice == null)
+                            if (!this.skuExist(siesaPrice))
                             {
-                                this.vtexRepository.savePrice(localPrice).Wait();
-                                this.updatePriceForMeasurementUnit(localPrice.sku.product, localPrice.price);
-                                this.loadPrices.Add(localPrice);
+                                this.notProccecedPrices.Add(siesaPrice);
                                 continue;
                             }
-                            if (vtexPrice != null)
-                            {
-                                if (vtexPrice.price != localPrice.price)
-                                {
-                                    this.vtexRepository.savePrice(localPrice).Wait();
-                                    this.updatePriceForMeasurementUnit(localPrice.sku.product, localPrice.price);
-                                    this.updatedPrices.Add(localPrice);
-                                    this.details.Add(new Detail(
-                                            origin: "vtex",
-                                            action: "crear o actualizar precio",
-                                            content: JsonSerializer.Serialize(localPrice, this.jsonOptions),
-                                            description: "petición de crear o actualizar precio, completada con éxito.",
-                                            success: true
-                                            ));
-                                    continue;
-                                }
-                                if (vtexPrice.price == localPrice.price)
-                                {
-                                    this.updatePriceForMeasurementUnit(localPrice.sku.product, localPrice.price);
-                                    this.notProccecedPrices.Add(localPrice);
-                                    continue;
-                                }
-                            }
-                        }
-                        catch (VtexException vtexException)
-                        {
-                            this.console.throwException(vtexException.Message);
-                            this.failedPrices.Add(localPrice);
-                            this.details.Add(new Detail(
-                                        origin: "vtex",
-                                        action: vtexException.requestUrl,
-                                        content: vtexException.responseBody,
-                                        description: vtexException.Message,
-                                        success: false
-                                        ));
-                            this.logger.writelog(vtexException);
-                        }
-                        catch (Exception exception)
-                        {
-                            this.failedPrices.Add(localPrice);
-                            this.console.throwException(exception.Message);
-                            this.logger.writelog(exception);
-                        }
-                    }
 
-                    if (localPrice == null)
-                    {
-                        try
-                        {
-                            localPrice = await this.localRepository.savePrice(siesaPrice);
-                            Price vtexPrice = await this.vtexRepository.getPriceByVtexId(localPrice.sku.vtex_id);
-                            if (vtexPrice == null)
+                            Price localPrice = this.localRepository.getPriceBySkuErpId(siesaPrice.sku_erp_id).Result;
+
+                            if (localPrice != null)
                             {
-                                await this.vtexRepository.savePrice(localPrice);
-                                this.loadPrices.Add(localPrice);
-                                this.details.Add(new Detail(
-                                    origin: "vtex",
-                                    action: "crear o actualizar precio",
-                                    content: JsonSerializer.Serialize(localPrice, this.jsonOptions),
-                                    description: "petición de crear o actualizar precio, completada con éxito.",
-                                    success: true
-                                    ));
-                                continue;
-                            }
-                            if (vtexPrice != null)
-                            {
-                                if (vtexPrice.price != localPrice.price)
+                                try
                                 {
-                                    await this.vtexRepository.savePrice(localPrice);
-                                    this.loadPrices.Add(localPrice);
-                                    this.details.Add(new Detail(
-                                        origin: "vtex",
-                                        action: "crear o actualizar precio",
-                                        content: JsonSerializer.Serialize(localPrice, this.jsonOptions),
-                                        description: "petición de crear o actualizar precio, completada con éxito.",
-                                        success: true
-                                        ));
-                                    continue;
+                                    if (localPrice.differentPricesFrom(siesaPrice))
+                                    {
+                                        localPrice.updatePricesFrom(siesaPrice);
+                                        await this.localRepository.updatePrice(localPrice);
+                                    }
+
+                                    Price vtexPrice = this.vtexRepository.getPriceByVtexId(localPrice.sku.vtex_id).Result;
+
+                                    if (vtexPrice == null)
+                                    {
+                                        this.vtexRepository.savePrice(localPrice).Wait();
+                                        this.loadPrices.Add(localPrice);
+                                        continue;
+                                    }
+                                    if (vtexPrice != null)
+                                    {
+                                        if (vtexPrice.differentPricesFrom(localPrice))
+                                        {
+                                            this.vtexRepository.savePrice(localPrice).Wait();
+                                            this.updatedPrices.Add(localPrice);
+                                            continue;
+                                        }
+                                        if (!vtexPrice.differentPricesFrom(localPrice))
+                                        {
+                                            this.notProccecedPrices.Add(localPrice);
+                                            continue;
+                                        }
+                                    }
+                                }
+                                catch (VtexException vtexException)
+                                {
+                                    this.console.throwException(vtexException.Message);
+                                    this.failedPrices.Add(localPrice);
+                                    this.logger.writelog(vtexException);
+                                }
+                                catch (Exception exception)
+                                {
+                                    this.failedPrices.Add(localPrice);
+                                    this.console.throwException(exception.Message);
+                                    this.logger.writelog(exception);
+                                }
+                            }
+
+                            if (localPrice == null)
+                            {
+                                try
+                                {
+                                    localPrice = await this.localRepository.savePrice(siesaPrice);
+                                    Price vtexPrice = await this.vtexRepository.getPriceByVtexId(localPrice.sku.vtex_id);
+                                    if (vtexPrice == null)
+                                    {
+                                        await this.vtexRepository.savePrice(localPrice);
+                                        this.loadPrices.Add(localPrice);
+                                        continue;
+                                    }
+                                    if (vtexPrice != null)
+                                    {
+                                        if (vtexPrice.price != localPrice.price)
+                                        {
+                                            await this.vtexRepository.savePrice(localPrice);
+                                            this.loadPrices.Add(localPrice);
+                                            continue;
+                                        }
+                                    }
+                                }
+                                catch (VtexException vtexException)
+                                {
+                                    this.console.throwException(vtexException.Message);
+                                    this.failedPrices.Add(localPrice);
+                                    this.logger.writelog(vtexException);
+                                }
+                                catch (Exception exception)
+                                {
+                                    this.failedPrices.Add(localPrice);
+                                    this.console.throwException(exception.Message);
+                                    this.logger.writelog(exception);
                                 }
                             }
                         }
-                        catch (VtexException vtexException)
-                        {
-                            this.console.throwException(vtexException.Message);
-                            this.failedPrices.Add(localPrice);
-                            this.details.Add(new Detail(
-                                        origin: "vtex",
-                                        action: vtexException.requestUrl,
-                                        content: vtexException.responseBody,
-                                        description: vtexException.Message,
-                                        success: false
-                                        ));
-                            this.logger.writelog(vtexException);
-                        }
-                        catch (Exception exception)
-                        {
-                            this.failedPrices.Add(localPrice);
-                            this.console.throwException(exception.Message);
-                            this.logger.writelog(exception);
-                        }
                     }
+                    catch (Exception exception)
+                    {
+                        console.throwException(exception.Message);
+                        break;
+                    }
+                    page ++;
                 }
             }
-            catch(SiesaException siesaException)
+            catch (SiesaException siesaException)
             {
                 this.console.throwException(siesaException.Message);
-                this.details.Add(new Detail(
-                                    origin: "siesa",
-                                    action: "obtener todos los precios",
-                                    content: siesaException.Message,
-                                    description: siesaException.Message,
-                                    success: false
-                                    ));
                 this.logger.writelog(siesaException);
             }
-            catch(Exception genericException)
+            catch (Exception genericException)
             {
                 this.console.throwException(genericException.Message);
                 this.logger.writelog(genericException);
             }
-
             this.console.processEndstAt(processName, DateTime.Now);
-
-            this.processLogger.Log(
-                name: this.processName,
-                total_loads: this.loadPrices.Count + this.updatedPrices.Count,
-                total_errors: this.failedPrices.Count,
-                total_not_procecced: this.notProccecedPrices.Count,
-                total_obtained: this.obtainedPrices,
-                json_details: JsonSerializer.Serialize(this.details, jsonOptions)
-                );
-            this.mail.sendMail(this.loadPrices, this.updatedPrices, this.failedPrices);
-        }
-
-        private void updatePriceForMeasurementUnit(Product product, decimal price)
-        {
-            decimal content;
-            decimal pmu; // price for measurement unit
-            if (product.business == Stores.AGROCOLANTA) return;
-            if (product.vtex_id == null) return;
-            var specifications = this.specificationsVtexRepository.getProductSpecifications((int)product.vtex_id).Result;
-            foreach(Specification specification in specifications)
-            {
-                if(specification.Id == SpecificationsIds.CONTENT && specification.Value.Count > 0) 
-                {
-                    if (specification.Value[0] == "") return;
-                    content = Convert.ToDecimal(specification.Value[0]);
-                    pmu = price / content;
-
-                    var pmuSpecificationValue = new List<string>();
-                    pmuSpecificationValue.Add(pmu.ToString("#.##"));
-                    var pmuSpecification = new Specification(SpecificationsIds.PRICE_FOR_MEASUREMENT_UNIT, pmuSpecificationValue);
-                    this.specificationsVtexRepository.updateProductSpecification((int)product.vtex_id, pmuSpecification);
-                    break;
-                }
-            }
+            /* this.mail.sendMail(this.loadPrices, this.updatedPrices, this.failedPrices); */
         }
 
         private bool skuExist(Price price)
         {
-            Task<Sku?> sku = this.skusLocalRepository.getSkuByConcatSiesaId(price.sku_concat_siesa_id);
-            if (sku.Result == null) {
+            Task<Sku?> sku = this.skusLocalRepository.getSkuBySiesaId(price.sku_erp_id);
+            if (sku.Result == null)
+            {
                 return false;
             }
             return true;

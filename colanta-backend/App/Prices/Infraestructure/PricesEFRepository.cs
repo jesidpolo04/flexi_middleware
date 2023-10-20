@@ -18,12 +18,12 @@ namespace colanta_backend.App.Prices.Infraestructure
             this.dbContext = new ColantaContext(configuration);
         }
 
-        public async Task<Price?> getPriceBySkuConcatSiesaId(string concat_siesa_id)
+        public async Task<Price?> getPriceBySkuErpId(string skuErpId)
         {
             var efPrices = this.dbContext.Prices
                 .Include(price => price.sku)
                 .ThenInclude(sku => sku.product)
-                .Where(e => e.sku_concat_siesa_id == concat_siesa_id);
+                .Where(e => e.sku_erp_id == skuErpId);
 
             if (efPrices.ToArray().Length > 0)
             {
@@ -54,11 +54,11 @@ namespace colanta_backend.App.Prices.Infraestructure
         {
             EFPrice efPrice = new EFPrice();
             efPrice.setEfPriceFromPrice(price);
-            EFSku efSku = this.dbContext.Skus.Where(sku => sku.concat_siesa_id == price.sku_concat_siesa_id).First();
+            EFSku efSku = this.dbContext.Skus.Where(sku => sku.siesa_id == price.sku_erp_id).First();
             efPrice.sku = efSku;
             this.dbContext.Add(efPrice);
             this.dbContext.SaveChanges();
-            return await this.getPriceBySkuConcatSiesaId(price.sku_concat_siesa_id);
+            return await this.getPriceBySkuErpId(price.sku_erp_id);
         }
 
         public async Task<Price> updatePrice(Price price)
@@ -67,7 +67,7 @@ namespace colanta_backend.App.Prices.Infraestructure
 
             efPrice.price = price.price;
             efPrice.business = price.business;
-            efPrice.sku_concat_siesa_id = price.sku_concat_siesa_id;
+            efPrice.sku_erp_id = price.sku_erp_id;
             efPrice.sku_id = price.sku_id;
             dbContext.SaveChanges();
 
@@ -82,7 +82,7 @@ namespace colanta_backend.App.Prices.Infraestructure
 
                 efPrice.price = price.price;
                 efPrice.business = price.business;
-                efPrice.sku_concat_siesa_id = price.sku_concat_siesa_id;
+                efPrice.sku_erp_id = price.sku_erp_id;
                 efPrice.sku_id = price.sku_id;
             }
             dbContext.SaveChanges();

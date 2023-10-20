@@ -188,8 +188,10 @@ namespace colanta_backend.App.Shared.Infraestructure
                 entity.ToTable("prices");
 
                 entity.Property(e => e.id).IsRequired().ValueGeneratedOnAdd();
-                entity.Property(e => e.sku_concat_siesa_id).IsRequired();
+                entity.Property(e => e.sku_erp_id).IsRequired();
                 entity.Property(e => e.price);
+                entity.Property(e => e.list_price);
+                entity.Property(e => e.cost_price);
                 entity.Property(e => e.business);
                 
                 entity.HasOne(e => e.sku).WithOne().HasForeignKey<EFPrice>(e => e.sku_id);
