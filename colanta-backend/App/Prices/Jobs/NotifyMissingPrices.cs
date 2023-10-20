@@ -36,7 +36,7 @@
             {
                 try
                 {
-                    var prices = siesaPrices.Where(price => price.sku_concat_siesa_id == sku.concat_siesa_id);
+                    var prices = siesaPrices.Where(price => price.sku_erp_id == sku.siesa_id);
                     if (prices.ToArray().Length == 0)
                     {
                         this.mail.sendMail(sku);
