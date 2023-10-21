@@ -39,7 +39,7 @@
             EFWarehouse efWarehouse = this.dbContext.Warehouses.Where(warehouse => warehouse.siesa_id == inventory.warehouse_siesa_id).First();
             efInventory.warehouse = efWarehouse;
 
-            EFSku efSku = this.dbContext.Skus.Where(sku => sku.concat_siesa_id == inventory.sku_erp_id).First();
+            EFSku efSku = this.dbContext.Skus.Where(sku => sku.siesa_id == inventory.sku_erp_id).First();
             efInventory.sku = efSku;
 
             this.dbContext.Add(efInventory);

@@ -162,7 +162,6 @@
                     Name = category.name,
                     IsActive = category.isActive,
                     Title = category.name,
-                    FatherCategoryId = category.business == "mercolanta" ? MercolantaCategory.vtexId : AgrocolantaCategory.vtexId,
                     GlobalCategoryId = category.business == "mercolanta" ? MERCOLANTA_DEFAULT_CATEGORY : AGROCOLANTA_DEFAULT_CATEGORY,
                 }) ;
             }
