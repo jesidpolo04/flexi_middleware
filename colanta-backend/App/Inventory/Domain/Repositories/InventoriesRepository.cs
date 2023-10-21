@@ -6,6 +6,6 @@
         Task<Inventory> saveInventory(Inventory inventory);
         Task<Inventory> updateInventory(Inventory inventory);
         Task<Inventory[]> updateInventories(Inventory[] inventories);
-        Task<Inventory> getInventoryByConcatSiesaIdAndWarehouseSiesaId(string concatSiesaId, string warehouseSiesaId);
+        Task<Inventory> getInventoryBySkuErpIdAndWarehouseSiesaId(string skuErpId, string warehouseSiesaId);
     }
 }

@@ -214,7 +214,7 @@ namespace colanta_backend.App.Shared.Infraestructure
                 entity.ToTable("inventories");
 
                 entity.Property(e => e.id).IsRequired().ValueGeneratedOnAdd();
-                entity.Property(e => e.sku_concat_siesa_id).IsRequired();
+                entity.Property(e => e.sku_erp_id).IsRequired();
                 entity.Property(e => e.warehouse_id).IsRequired();
                 entity.Property(e => e.quantity);
                 entity.Property(e => e.business);

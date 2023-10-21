@@ -8,7 +8,7 @@
         public int id { get; set; }
         public int quantity { get; set; }
         public int sku_id { get; set; }
-        public string sku_concat_siesa_id { get; set; }
+        public string sku_erp_id { get; set; }
         public EFSku sku { get; set; }
         public int warehouse_id { get; set; }
         public string warehouse_siesa_id { get; set; }
@@ -21,7 +21,7 @@
             inventory.id = this.id;
             inventory.quantity = this.quantity;
             inventory.sku_id = this.sku_id;
-            inventory.sku_concat_siesa_id = this.sku_concat_siesa_id;
+            inventory.sku_erp_id = this.sku_erp_id;
             inventory.warehouse_id = this.warehouse_id;
             inventory.warehouse_siesa_id = this.warehouse_siesa_id;
             inventory.business = this.business;
@@ -57,7 +57,7 @@
         {
             this.id = inventory.id;
             this.quantity = inventory.quantity;
-            this.sku_concat_siesa_id = inventory.sku_concat_siesa_id;
+            this.sku_erp_id = inventory.sku_erp_id;
             this.warehouse_siesa_id = inventory.warehouse_siesa_id;
             this.business = inventory.business;
         }

@@ -15,17 +15,18 @@
 
         public Inventory getInventoryFromDto()
         {
-            Inventory inventory = new Inventory();
-
-            inventory.quantity = cantidad;
-            inventory.business = negocio;
+            Inventory inventory = new Inventory
+            {
+                quantity = cantidad,
+                business = negocio
+            };
             if (id_variacion != null)
             {
-                inventory.sku_concat_siesa_id = this.negocio + "_" + this.id_producto + "_" + id_variacion;
+                inventory.sku_erp_id = id_variacion;
             }
             else
             {
-                inventory.sku_concat_siesa_id = this.negocio + "_" + this.id_producto + "_" + id_producto;
+                inventory.sku_erp_id = id_producto;
             }
             return inventory;
         }

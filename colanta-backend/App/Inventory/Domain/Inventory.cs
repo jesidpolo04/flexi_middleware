@@ -6,7 +6,7 @@
         public int id { get; set; }
         public int quantity { get; set; }
         public int sku_id { get; set; }
-        public string sku_concat_siesa_id { get; set; }
+        public string sku_erp_id { get; set; }
         public Sku sku { get; set; }
         public int warehouse_id { get; set; }
         public string warehouse_siesa_id { get; set; }

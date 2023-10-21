@@ -62,12 +62,6 @@
                 {
                     Inventory[] siesaInventories = inventoriesSiesaRepository.getAllInventoriesByWarehouse(warehouse.siesa_id, 1).Result;
                     this.obtainedInventories += siesaInventories.Length;
-                    this.details.Add(new Detail(
-                                    origin: "siesa",
-                                    action: "traer todos los inventarios",
-                                    content: JsonSerializer.Serialize(siesaInventories, this.jsonOptions),
-                                    description: "petición completada con éxito",
-                                    success: true));
                     foreach (Inventory siesaInventory in siesaInventories)
                     {
                         try
@@ -77,7 +71,7 @@
                                 this.notProccecedInventories.Add(siesaInventory);
                                 continue;
                             }
-                            Inventory localInventory = inventoriesLocalRepository.getInventoryByConcatSiesaIdAndWarehouseSiesaId(siesaInventory.sku_concat_siesa_id, siesaInventory.warehouse_siesa_id).Result;
+                            Inventory localInventory = inventoriesLocalRepository.getInventoryBySkuErpIdAndWarehouseSiesaId(siesaInventory.sku_erp_id, siesaInventory.warehouse_siesa_id).Result;
 
                             if (localInventory != null)
                             {
@@ -88,12 +82,6 @@
                                     inventoriesVtexRepository.updateInventory(localInventory);
                                     inventoriesVtexRepository.removeReservedInventory(localInventory);
                                     this.updatedInventories.Add(localInventory);
-                                    this.details.Add(new Detail(
-                                    origin: "vtex",
-                                    action: "crear o actualizar inventario",
-                                    content: JsonSerializer.Serialize(localInventory, this.jsonOptions),
-                                    description: "petición completada con éxito",
-                                    success: true));
                                 }
 
                                 if (localInventory.quantity == siesaInventory.quantity)
@@ -116,25 +104,12 @@
                                 }
                                 inventoriesVtexRepository.updateInventory(localInventory);
                                 this.loadInventories.Add(localInventory);
-
-                                this.details.Add(new Detail(
-                                    origin: "vtex",
-                                    action: "crear o actualizar inventario",
-                                    content: JsonSerializer.Serialize(localInventory, this.jsonOptions),
-                                    description: "petición completada con éxito",
-                                    success: true));
                             }
                         }
                         catch (VtexException vtexException)
                         {
                             this.failedInventories.Add(siesaInventory);
                             this.console.throwException(vtexException.Message);
-                            this.details.Add(new Detail(
-                                    origin: "vtex",
-                                    action: vtexException.requestUrl,
-                                    content: vtexException.responseBody,
-                                    description: vtexException.Message,
-                                    success: false));
                             logger.writelog(vtexException);
                         }
                         catch (Exception exception)
@@ -148,12 +123,6 @@
                 catch (SiesaException siesaException)
                 {
                     this.console.throwException(siesaException.Message);
-                    this.details.Add(new Detail(
-                                    origin: "siesa",
-                                    action: siesaException.requestUrl,
-                                    content: siesaException.responseBody,
-                                    description: siesaException.Message,
-                                    success: false));
                     logger.writelog(siesaException);
                 }
                 catch (Exception genericException)
@@ -162,20 +131,13 @@
                     logger.writelog(genericException);
                 }
             });
-            this.process.Log(
-                name: this.processName, 
-                this.loadInventories.Count + this.updatedInventories.Count, 
-                this.failedInventories.Count, 
-                this.notProccecedInventories.Count, 
-                this.obtainedInventories, 
-                JsonSerializer.Serialize(this.details, jsonOptions));
-            this.mail.sendMail(this.loadInventories, this.updatedInventories, this.failedInventories);
+            /* this.mail.sendMail(this.loadInventories, this.updatedInventories, this.failedInventories); */
             this.console.processEndstAt(processName, DateTime.Now);
         }
 
         private bool skuExists(Inventory inventory, SkusRepository repository)
         {
-            Task<Sku> sku = repository.getSkuByConcatSiesaId(inventory.sku_concat_siesa_id);
+            Task<Sku> sku = repository.getSkuBySiesaId(inventory.sku_erp_id);
             if(sku.Result == null)
             {
                 return false;
