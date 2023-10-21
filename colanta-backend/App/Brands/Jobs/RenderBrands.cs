@@ -66,13 +66,6 @@
 
                 Brand[] siesaBrands = await brandsSiesaRepository.getAllBrands();
                 this.obtainedBrands = siesaBrands.Length;
-                this.details.Add(new Detail(
-                        origin: "siesa",
-                        action: "obtener todas las marcas",
-                        success: true,
-                        description: null,
-                        content: JsonSerializer.Serialize(siesaBrands)
-                    ));
                 Brand[] deltaBrands = this.brandsLocalRepository.getDeltaBrands(siesaBrands);
                 if (deltaBrands.Length > 0)
                 {
@@ -83,24 +76,10 @@
                             deltaBrand.state = false;
                             await this.brandsVtexRepository.updateBrandState((int)deltaBrand.id_vtex, false);
                             this.inactivatedBrands.Add(deltaBrand);
-                            this.details.Add(new Detail(
-                                    origin: "vtex",
-                                    success: true,
-                                    action: "desactivar marca",
-                                    description: null,
-                                    content: null
-                                )); 
                         }
                         catch (VtexException vtexException)
                         {
                             this.console.throwException(vtexException.Message);
-                            this.details.Add(new Detail(
-                                    origin: "vtex",
-                                    action: vtexException.requestUrl,
-                                    success: false,
-                                    description: vtexException.Message,
-                                    content: vtexException.responseBody
-                                ));
                             await this.logger.writelog(vtexException);
                         }
                     }
@@ -129,16 +108,6 @@
                         {
                             localBrand = this.brandsLocalRepository.saveBrand(siesaBrand);
                             Brand? vtexBrand = await this.brandsVtexRepository.saveBrand(localBrand);
-
-                            this.details.Add(
-                                new Detail(
-                                    origin: "vtex",
-                                    action: "guardar marca",
-                                    success: true,
-                                    description: null,
-                                    content: JsonSerializer.Serialize(vtexBrand, jsonOptions)
-                            ));
-
                             localBrand.id_vtex = vtexBrand.id_vtex;
                             this.brandsLocalRepository.updateBrand(localBrand);
                             this.loadBrands.Add(localBrand);
@@ -148,13 +117,6 @@
                     catch (VtexException vtexException)
                     {
                         this.console.throwException(vtexException.Message);
-                        this.details.Add(new Detail(
-                                                origin: "vtex",
-                                                action: vtexException.requestUrl,
-                                                success: false,
-                                                description: vtexException.Message,
-                                                content: vtexException.responseBody
-                                            ));
                         this.failedLoadBrands.Add(siesaBrand);
                         await this.logger.writelog(vtexException);
                     }
@@ -164,48 +126,17 @@
                         await this.logger.writelog(exception);
                     }
                 }
-                this.processLogger.Log(
-                    name: this.processName,
-                    total_loads: this.loadBrands.Count,
-                    total_errors: this.failedLoadBrands.Count,
-                    total_not_procecced: this.inactiveBrands.Count + notProccecedBrands.Count,
-                    total_obtained: siesaBrands.Length,
-                    json_details: JsonSerializer.Serialize(this.details, jsonOptions)
-                );
                 this.console.processEndstAt(processName, DateTime.Now);
             }
             catch (SiesaException siesaException)
             {
                 this.console.throwException(siesaException.Message);
-                this.details.Add(new Detail(
-                    origin: "siesa",
-                    action: siesaException.requestUrl,
-                    content: siesaException.responseBody,
-                    description: siesaException.Message,
-                    success: false
-                    ));
-                this.processLogger.Log(
-                    name: this.processName,
-                    total_loads: this.loadBrands.Count,
-                    total_errors: this.failedLoadBrands.Count,
-                    total_not_procecced: this.inactiveBrands.Count + notProccecedBrands.Count,
-                    total_obtained: obtainedBrands,
-                    json_details: JsonSerializer.Serialize(this.details, jsonOptions)
-                );
                 await this.logger.writelog(siesaException);
                 this.console.processEndstAt(processName, DateTime.Now);
             }
             catch (Exception exception)
             {
                 this.console.throwException(exception.Message);
-                this.processLogger.Log(
-                    name: this.processName,
-                    total_loads: this.loadBrands.Count,
-                    total_errors: this.failedLoadBrands.Count,
-                    total_not_procecced: this.inactiveBrands.Count + notProccecedBrands.Count,
-                    total_obtained: obtainedBrands,
-                    json_details: JsonSerializer.Serialize(this.details, jsonOptions)
-                );
                 await this.logger.writelog(exception);
                 this.console.processEndstAt(processName, DateTime.Now);
             }

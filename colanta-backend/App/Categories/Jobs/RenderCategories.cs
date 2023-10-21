@@ -15,7 +15,6 @@
         private CategoriesRepository localRepository;
         private CategoriesVtexRepository vtexRepository;
         private CategoriesSiesaRepository siesaRepository;
-        private IProcess processLogger;
         private ILogger logger;
         private IRenderCategoriesMail mail;
         private CustomConsole console;
@@ -33,7 +32,6 @@
             CategoriesRepository categoriesLocalRepository, 
             CategoriesVtexRepository categoriesVtexRepository, 
             CategoriesSiesaRepository categoriesSiesaRepository,
-            IProcess logs,
             ILogger logger,
             IRenderCategoriesMail mail
         )
@@ -41,7 +39,6 @@
             this.localRepository = categoriesLocalRepository;
             this.vtexRepository = categoriesVtexRepository;
             this.siesaRepository = categoriesSiesaRepository;
-            this.processLogger = logs;
             this.mail = mail;
             this.logger = logger;
             this.console = new CustomConsole();
@@ -59,7 +56,6 @@
 
                 Category[] siesaCategories = await this.siesaRepository.getAllCategories();
                 obtainedCategories = siesaCategories.Length;
-                this.details.Add(new Detail("siesa", "traer todas las categorías", JsonSerializer.Serialize(siesaCategories, jsonOptions), null, true));
 
                 Category[] deltaCategories = await this.localRepository.getDeltaCategories(siesaCategories);
                 foreach (Category deltaCategory in deltaCategories)
@@ -72,12 +68,10 @@
 
                         //metrics
                         this.inactivatedCategories.Add(deltaCategory);
-                        this.details.Add(new Detail(origin: "vtex", "Desactivar categoría", null, null, true));
                     }
                     catch (VtexException exception)
                     {
                         this.console.throwException(exception.Message);
-                        this.details.Add(new Detail("vtex", exception.requestUrl, exception.responseBody, exception.Message, false));
                         await this.logger.writelog(exception);
                     }
                 }
@@ -130,13 +124,11 @@
                                     childLocalCategory.vtex_id = vtexChildCategory.vtex_id;
                                     childLocalCategory = await this.localRepository.updateCategory(childLocalCategory);
                                     this.loadCategories.Add(childLocalCategory);
-                                    this.details.Add(new Detail("vtex", "Guardar categoría", null, null, true));
                                 }
                                 catch(VtexException exception)
                                 {
                                     this.console.throwException(exception.Message);
                                     this.failedLoadCategories.Add(childSiesaCategory);
-                                    this.details.Add(new Detail("vtex", exception.requestUrl, exception.responseBody, exception.Message, false));
                                     this.logger.writelog(exception);
                                 }
                                 catch(Exception exception)
@@ -158,7 +150,6 @@
                             localCategory.vtex_id = vtexCategory.vtex_id;
                             localCategory = await this.localRepository.updateCategory(localCategory);
                             this.loadCategories.Add(localCategory);
-                            this.details.Add(new Detail("vtex", "Guardar categoría", null, null, true));
                             foreach (Category localChildCategory in localCategory.childs)
                             {
                                 try
@@ -168,7 +159,6 @@
                                     localChildCategory.vtex_id = vtexChildCategory.vtex_id;
                                     await this.localRepository.updateCategory(localChildCategory);
                                     this.loadCategories.Add(localChildCategory);
-                                    this.details.Add(new Detail("vtex", "Guardar categoría", null, null, true));
                                 }
                                 catch(VtexException exception)
                                 {
@@ -192,7 +182,6 @@
                             {
                                 this.failedLoadCategories.Add(child);
                             }
-                            this.details.Add(new Detail("vtex", exception.requestUrl, exception.responseBody, exception.Message, false));
                             this.logger.writelog(exception);
                         }
                         catch(Exception exception)
@@ -202,13 +191,6 @@
                         }
                     }
                 }
-                this.processLogger.Log(
-                   processName,
-                   loadCategories.Count,
-                   failedLoadCategories.Count,
-                   notProccecedCategories.Count + inactiveCategories.Count,
-                   obtainedCategories,
-                   JsonSerializer.Serialize(details, jsonOptions));
                 this.console.processEndstAt(processName, DateTime.Now);
             }
             catch (SiesaException exception)
@@ -216,27 +198,12 @@
                 this.console.throwException(exception.Message);
                 this.console.processEndstAt(processName, DateTime.Now);
                 this.logger.writelog(exception);
-                this.processLogger.Log(
-                    processName, 
-                    loadCategories.Count, 
-                    failedLoadCategories.Count,
-                    notProccecedCategories.Count + inactiveCategories.Count,
-                    obtainedCategories, 
-                    JsonSerializer.Serialize(details, jsonOptions));
-                this.console.processEndstAt(processName, DateTime.Now);
             }
             catch(Exception exception)
             {
                 this.console.throwException(exception.Message);
                 this.console.processEndstAt(processName, DateTime.Now);
                 this.logger.writelog(exception);
-                this.processLogger.Log(
-                    processName,
-                    loadCategories.Count,
-                    failedLoadCategories.Count,
-                    notProccecedCategories.Count + inactiveCategories.Count,
-                    obtainedCategories,
-                    JsonSerializer.Serialize(details, jsonOptions));
                 this.console.processEndstAt(processName, DateTime.Now);
             }
             this.mail.sendMail(this.loadCategories, this.inactivatedCategories, this.failedLoadCategories);

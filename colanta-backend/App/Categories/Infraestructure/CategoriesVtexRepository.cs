@@ -135,8 +135,7 @@
         {
             string endpoint = "/api/catalog/pvt/category";
             string jsonContent;
-            var MERCOLANTA_DEFAULT_CATEGORY = MercolantaCategory.defaultGlobalCategory;
-            var AGROCOLANTA_DEFAULT_CATEGORY = AgrocolantaCategory.defaultGlobalCategory;
+            var DEFAULT_GLOBAL_CATEGORY = 187;
 
             Category existCategory = await this.getCategoryByName(category.name);
             if(existCategory != null)
@@ -152,7 +151,7 @@
                     IsActive = category.isActive,
                     Title = category.name,
                     FatherCategoryId = category.father.vtex_id,
-                    GlobalCategoryId = category.business == "mercolanta" ? MERCOLANTA_DEFAULT_CATEGORY : AGROCOLANTA_DEFAULT_CATEGORY,
+                    GlobalCategoryId = DEFAULT_GLOBAL_CATEGORY
                 });
             }
             else
@@ -162,7 +161,7 @@
                     Name = category.name,
                     IsActive = category.isActive,
                     Title = category.name,
-                    GlobalCategoryId = category.business == "mercolanta" ? MERCOLANTA_DEFAULT_CATEGORY : AGROCOLANTA_DEFAULT_CATEGORY,
+                    GlobalCategoryId = DEFAULT_GLOBAL_CATEGORY
                 }) ;
             }
             
