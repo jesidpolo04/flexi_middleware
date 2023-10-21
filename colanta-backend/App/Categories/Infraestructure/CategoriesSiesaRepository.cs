@@ -36,10 +36,8 @@
             List<Category> categories = new List<Category>();
             foreach(SiesaCategoryDto siesaCategoryDto in siesaCategoriesDto.familias)
             {
-                Console.WriteLine($"id: {siesaCategoryDto.id}, nombre: {siesaCategoryDto.nombre}");
                 categories.Add(siesaCategoryDto.toCategory());
             }
-            Console.WriteLine($"total categorias { categories.Count }");
             return categories.ToArray();
         }
 
