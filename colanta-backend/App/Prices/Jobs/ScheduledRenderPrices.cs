@@ -10,7 +10,7 @@
     {
         private readonly CrontabSchedule _crontabSchedule;
         private DateTime _nextRun;
-        private const string Schedule = "0 50 7,11,16,19 * * *";
+        private const string Schedule = "0 20 7,11,16,19 * * *";
         private RenderPrices renderPrices;
         private ILogger logger;
 
