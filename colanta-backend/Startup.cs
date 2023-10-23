@@ -145,28 +145,28 @@ namespace colanta_backend
             //------------------- Tasks -------------------------//
 
             //Scheduled Tasks
-            //services.AddHostedService<ScheduledRenderBrands>();
-            /*services.AddHostedService<ScheduledUpdateBrandsState>();
-            services.AddHostedService<ScheduledUpBrandsToVtex>();
+            services.AddHostedService<ScheduledRenderBrands>();
+            //services.AddHostedService<ScheduledUpdateBrandsState>();
+            //services.AddHostedService<ScheduledUpBrandsToVtex>();
 
             services.AddHostedService<ScheduledRenderCategories>();
-            services.AddHostedService<ScheduledUpCategoriesToVtex>();
-            services.AddHostedService<ScheduledUpdateCategoriesState>();
+            //services.AddHostedService<ScheduledUpCategoriesToVtex>();
+            //services.AddHostedService<ScheduledUpdateCategoriesState>();
 
-            services.AddHostedService<ScheduledRenderProductsAndSkus>();
-            services.AddHostedService<ScheduledUpToVtexNullProductsAndSkus>();
-            services.AddHostedService<ScheduledUpdateProductsAndSkusStates>();
+            services.AddHostedService<App.Products.Jobs.ScheduledRenderProductsAndSkus>();
+            //services.AddHostedService<ScheduledUpToVtexNullProductsAndSkus>();
+            //services.AddHostedService<ScheduledUpdateProductsAndSkusStates>();
 
             services.AddHostedService<ScheduledRenderPrices>();
-            services.AddHostedService<ScheduledNotifyMissingPrices>(); */
+            //services.AddHostedService<ScheduledNotifyMissingPrices>();
 
-            /* services.AddHostedService<ScheduledRenderInventories>();
+            services.AddHostedService<ScheduledRenderInventories>();
 
-            services.AddHostedService<ScheduledRenderPromotions>();
-            services.AddHostedService<ScheduledUpdatePromotionsState>();
-            services.AddHostedService<ScheduledUpToVtexNullPromotions>();
+            //services.AddHostedService<ScheduledRenderPromotions>();
+            //services.AddHostedService<ScheduledUpdatePromotionsState>();
+            //services.AddHostedService<ScheduledUpToVtexNullPromotions>();
 
-            services.AddHostedService<ScheduledUpdateSiesaOrders>(); */
+            //services.AddHostedService<ScheduledUpdateSiesaOrders>();
 
             services.AddSwaggerGen(c =>
             {
