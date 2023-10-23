@@ -173,6 +173,7 @@
                                 if (localSku.vtex_id.HasValue)
                                 {
                                     this.skusVtexRepository.changeSkuState((int)localSku.vtex_id, true);
+                                    localSku.is_active = true;
                                 }
                                 this.inactiveSkus.Add(localSku);
                             }
@@ -206,6 +207,7 @@
                                 }
                             }
                         }
+                        this.skusLocalRepository.updateSkus(inactiveSkus.ToArray());
                     }
                     catch (Exception exception)
                     {
