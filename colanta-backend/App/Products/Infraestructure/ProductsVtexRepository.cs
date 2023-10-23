@@ -119,7 +119,7 @@ namespace colanta_backend.App.Products.Infraestructure
 
         public async Task<Product> saveProduct(Product product)
         {
-            Product existProduct = await this.getProductBySiesaId(product.concat_siesa_id);
+            Product existProduct = await this.getProductBySiesaId(product.ref_id);
             if(existProduct != null)
             {
                 return existProduct;
