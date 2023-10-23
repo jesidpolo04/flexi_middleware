@@ -3,8 +3,7 @@
     using System;
     using System.Threading.Tasks;
     using Products.Domain;
-    using Shared.Domain;
-    using Shared.Application;
+    
     public class UpToVtexNullProductsAndSkus
     {
         private ProductsRepository productsLocalRepository;

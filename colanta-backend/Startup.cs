@@ -80,6 +80,7 @@ namespace colanta_backend
             services.AddTransient<App.Products.Domain.GetSkuVtexIdBySiesaId>();
             services.AddTransient<App.Products.Jobs.RenderProductsAndSkus>();
             services.AddTransient<App.Products.Jobs.UpdateProductsAndSkusStates>();
+            services.AddTransient<App.Products.Jobs.UpToVtexNullProductsAndSkus>();
             services.AddTransient<App.Products.Jobs.FixProductSkus>();
             //Dependencies Injections Specifications
             services.AddTransient<App.Specifications.Domain.SpecificationsVtexRepository, App.Specifications.Infraestructure.SpecificationsVtexRepository>();

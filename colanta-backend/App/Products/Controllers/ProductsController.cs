@@ -21,5 +21,12 @@ namespace colanta_backend.App.Products.Controllers
             job.Invoke();
             return Ok("Actualizando el estado de los productos.");
         }
+
+        [HttpPost]
+        [Route("reintentar")]
+        public ActionResult Retry([FromServices] UpToVtexNullProductsAndSkus job){
+            job.Invoke();
+            return Ok("Reintentando productos nulos a VTEX.");
+        }
     }
 }
