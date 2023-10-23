@@ -12,7 +12,14 @@ namespace colanta_backend.App.Products.Controllers
         public void Post([FromServices] RenderProductsAndSkus job)
         {
             job.Invoke();
-            Ok("Renderizando productos");
+            Ok("Renderizando productos.");
+        }
+
+        [HttpPost]
+        [Route("actualizar-estado")]
+        public ActionResult UpdateState([FromServices] UpdateProductsAndSkusStates job){
+            job.Invoke();
+            return Ok("Actualizando el estado de los productos.");
         }
     }
 }

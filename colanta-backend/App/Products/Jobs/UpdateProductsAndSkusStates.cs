@@ -29,8 +29,8 @@
         public async Task Invoke()
         {
             this.console.processStartsAt("Actualizando estados de productos", DateTime.Now);
-            //try
-            //{
+            try
+            {
                 Product[] localNotNullProducts = await this.productsLocalRepository.getVtexProducts();
                 foreach (Product localNotNullVtexProduct in localNotNullProducts)
                 {
@@ -45,7 +45,7 @@
                     }
                     catch (VtexException vtexException)
                     {
-
+                        console.throwException(vtexException.Message);
                     }
                 }
 
@@ -63,14 +63,14 @@
                     }
                     catch (VtexException vtexException)
                     {
-
+                        console.throwException(vtexException.Message);
                     }
                 }
-            //}
-            //catch (Exception exception)
-            //{
-
-            //}
+            }
+            catch (Exception exception)
+            {
+                console.throwException(exception.Message);
+            }
             this.console.processEndstAt("Actualizando estados de productos", DateTime.Now);
         }
     }
