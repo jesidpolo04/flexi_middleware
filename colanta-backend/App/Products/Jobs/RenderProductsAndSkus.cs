@@ -35,7 +35,6 @@
         private List<Sku> notProccecedSkus;
         private int obtainedSkus;
 
-        private List<Detail> details;
         private JsonSerializerOptions jsonOptions;
         public RenderProductsAndSkus
         (
@@ -74,7 +73,6 @@
             this.inactivatedSkus = new List<Sku>();
             this.notProccecedSkus = new List<Sku>();
 
-            this.details = new List<Detail>();
             this.jsonOptions = new JsonSerializerOptions();
             this.jsonOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
             this.jsonOptions.ReferenceHandler = ReferenceHandler.Preserve;
@@ -110,54 +108,43 @@
                             {
                                 deltaProduct.is_active = true;
                                 this.console.throwException(vtexException.Message);
-                                await this.logger.writelog(vtexException);
+                                this.logger.writelog(vtexException);
                             }
                             catch (Exception exception)
                             {
                                 deltaProduct.is_active = true;
                                 this.console.throwException(exception.Message);
-                                await this.logger.writelog(exception);
+                                this.logger.writelog(exception);
                             }
                         }
-                        await productsLocalRepository.updateProducts(deltaProducts);
+                        productsLocalRepository.updateProducts(deltaProducts);
 
                         foreach (Sku deltaSku in deltaSkus)
                         {
                             try
                             {
                                 deltaSku.is_active = false;
-                                await skusVtexRepository.changeSkuState((int)deltaSku.vtex_id, false);
-                                this.inactivatedSkus.Add(deltaSku);
-                                this.details.Add(new Detail(
-                                        origin: "vtex",
-                                        action: "actualizar estado en vtex",
-                                        content: null,
-                                        description: null,
-                                        success: true
-                                    ));
+                                if (deltaSku.vtex_id.HasValue)
+                                {
+                                    skusVtexRepository.changeSkuState((int)deltaSku.vtex_id, false);
+                                    this.inactivatedSkus.Add(deltaSku);
+                                }
                             }
                             catch (VtexException vtexException)
                             {
                                 deltaSku.is_active = true;
                                 this.console.throwException(vtexException.Message);
-                                this.details.Add(new Detail(
-                                        origin: "vtex",
-                                        action: vtexException.requestUrl,
-                                        content: vtexException.responseBody,
-                                        description: vtexException.Message,
-                                        success: false
-                                        ));
-                                await this.logger.writelog(vtexException);
+                                this.logger.writelog(vtexException);
                             }
                             catch (Exception exception)
                             {
                                 deltaSku.is_active = true;
                                 this.console.throwException(exception.Message);
-                                await this.logger.writelog(exception);
+                                this.logger.writelog(exception);
                             }
 
                         }
-                        await skusLocalRepository.updateSkus(deltaSkus);
+                        skusLocalRepository.updateSkus(deltaSkus);
 
                         foreach (Product siesaProduct in allSiesaProducts)
                         {
@@ -169,7 +156,7 @@
                             {
                                 this.console.throwException(exception.Message);
                                 this.invalidBrandMail.sendMail(exception);
-                                await this.logger.writelog(exception);
+                                this.logger.writelog(exception);
                                 this.failedProducts.Add(siesaProduct);
                                 continue;
                             }
@@ -177,7 +164,7 @@
                             {
                                 this.console.throwException(exception.Message);
                                 this.invalidCategoryMail.sendMail(exception);
-                                await this.logger.writelog(exception);
+                                this.logger.writelog(exception);
                                 this.failedProducts.Add(siesaProduct);
                                 continue;
                             }
@@ -186,7 +173,7 @@
 
                             if (localProduct != null && localProduct.is_active == false)
                             {
-                                //hay que activar
+                                //Producto inactivo
                             }
 
                             if (localProduct != null && localProduct.is_active == true)
@@ -201,19 +188,19 @@
                                     localProduct = await productsLocalRepository.saveProduct(siesaProduct);
                                     Product vtexProduct = await productsVtexRepository.saveProduct(localProduct);
                                     localProduct.vtex_id = vtexProduct.vtex_id;
-                                    await productsLocalRepository.updateProduct(localProduct);
+                                    productsLocalRepository.updateProduct(localProduct);
                                 }
                                 catch (VtexException vtexException)
                                 {
                                     this.console.throwException(vtexException.Message);
-                                    await this.logger.writelog(vtexException);
-                                    /* this.failedProducts.Add(siesaProduct); */
+                                    this.logger.writelog(vtexException);
+                                    this.failedProducts.Add(siesaProduct);
                                 }
                                 catch (Exception exception)
                                 {
                                     this.console.throwException(exception.Message);
-                                    await this.logger.writelog(exception);
-                                    /* this.failedProducts.Add(siesaProduct); */
+                                    this.logger.writelog(exception);
+                                    this.failedProducts.Add(siesaProduct);
                                 }
                             }
                         }
@@ -230,6 +217,10 @@
 
                             if (localSku != null && localSku.is_active == false)
                             {
+                                if (localSku.vtex_id.HasValue)
+                                {
+                                    this.skusVtexRepository.changeSkuState((int)localSku.vtex_id, true);
+                                }
                                 this.inactiveSkus.Add(localSku);
                             }
 
@@ -245,27 +236,20 @@
                                     localSku = await skusLocalRepository.saveSku(siesaSku);
                                     Sku vtexSku = await skusVtexRepository.saveSku(localSku);
                                     localSku.vtex_id = vtexSku.vtex_id;
-                                    await skusLocalRepository.updateSku(localSku);
+                                    skusLocalRepository.updateSku(localSku);
                                     this.loadSkus.Add(localSku);
                                 }
                                 catch (VtexException vtexException)
                                 {
                                     this.console.throwException(vtexException.Message);
                                     this.failedSkus.Add(siesaSku);
-                                    this.details.Add(new Detail(
-                                        origin: "vtex",
-                                        action: vtexException.requestUrl,
-                                        content: vtexException.responseBody,
-                                        description: vtexException.Message,
-                                        success: false
-                                    ));
-                                    await this.logger.writelog(vtexException);
+                                    this.logger.writelog(vtexException);
                                 }
                                 catch (Exception exception)
                                 {
                                     this.failedSkus.Add(siesaSku);
                                     this.console.throwException(exception.Message);
-                                    await this.logger.writelog(exception);
+                                    this.logger.writelog(exception);
                                 }
                             }
                         }
@@ -275,37 +259,20 @@
                         console.throwException(exception.Message);
                         break;
                     }
-                    page ++;
+                    page++;
                 }
                 this.console.processEndstAt(processName, DateTime.Now);
             }
             catch (SiesaException exception)
             {
                 this.console.throwException(exception.Message);
-                this.details.Add(new Detail("siesa", exception.requestUrl, exception.responseBody, exception.Message, false));
-                this.processLogger.Log(
-                        name: this.processName,
-                        this.loadSkus.Count,
-                        this.failedSkus.Count,
-                        this.notProccecedSkus.Count + this.inactiveSkus.Count,
-                        this.obtainedSkus,
-                        JsonSerializer.Serialize(this.details, jsonOptions)
-                    );
-                await this.logger.writelog(exception);
+                this.logger.writelog(exception);
                 this.console.processEndstAt(processName, DateTime.Now);
             }
             catch (Exception exception)
             {
                 this.console.throwException(exception.Message);
-                this.processLogger.Log(
-                        name: this.processName,
-                        this.loadSkus.Count,
-                        this.failedSkus.Count,
-                        this.notProccecedSkus.Count + this.inactiveSkus.Count,
-                        this.obtainedSkus,
-                        JsonSerializer.Serialize(this.details, jsonOptions)
-                    );
-                await this.logger.writelog(exception);
+                this.logger.writelog(exception);
                 this.console.processEndstAt(processName, DateTime.Now);
             }
             mail.sendMail(this.loadSkus, this.inactivatedSkus, this.failedSkus);
@@ -355,7 +322,6 @@
             this.notProccecedSkus.Clear();
             this.inactiveSkus.Clear();
             this.inactivatedSkus.Clear();
-            this.details.Clear();
         }
     }
 }
