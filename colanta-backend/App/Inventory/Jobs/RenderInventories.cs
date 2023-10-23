@@ -85,14 +85,14 @@
                                             localInventory.quantity = siesaInventory.quantity;
                                             localInventory = inventoriesLocalRepository.updateInventory(localInventory).Result;
                                             inventoriesVtexRepository.updateInventory(localInventory);
-                                            inventoriesVtexRepository.removeReservedInventory(localInventory);
+                                            /* inventoriesVtexRepository.removeReservedInventory(localInventory); */
                                             this.updatedInventories.Add(localInventory);
                                         }
 
                                         if (localInventory.quantity == siesaInventory.quantity)
                                         {
                                             inventoriesVtexRepository.updateInventory(localInventory);
-                                            inventoriesVtexRepository.removeReservedInventory(localInventory);
+                                            /* inventoriesVtexRepository.removeReservedInventory(localInventory); */
                                             this.notProccecedInventories.Add(localInventory);
                                         }
                                     }
