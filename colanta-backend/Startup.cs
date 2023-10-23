@@ -21,7 +21,6 @@ namespace colanta_backend
 {
     using App.Brands.Jobs;
     using App.Categories.Jobs;
-    using App.Products.Jobs;
     using App.Prices.Jobs;
     using App.Inventory.Jobs;
     using App.Promotions.Jobs;
@@ -80,6 +79,7 @@ namespace colanta_backend
             services.AddTransient<App.Products.Domain.IInvalidCategoryMail, App.Products.Infraestructure.InvalidCategoryMail>();
             services.AddTransient<App.Products.Domain.GetSkuVtexIdBySiesaId>();
             services.AddTransient<App.Products.Jobs.RenderProductsAndSkus>();
+            services.AddTransient<App.Products.Jobs.UpdateProductsAndSkusStates>();
             services.AddTransient<App.Products.Jobs.FixProductSkus>();
             //Dependencies Injections Specifications
             services.AddTransient<App.Specifications.Domain.SpecificationsVtexRepository, App.Specifications.Infraestructure.SpecificationsVtexRepository>();
