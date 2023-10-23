@@ -85,6 +85,8 @@
             {
                 console.processStartsAt(processName, DateTime.Now);
                 int page = 1;
+                List<Sku> allPagesSkus = new List<Sku>();
+
                 while (true)
                 {
                     try
@@ -93,58 +95,9 @@
                         Sku[] allSiesaSkus = await siesaRepository.getAllSkus(page);
                         this.obtainedSkus = allSiesaSkus.Length;
                         Product[] deltaProducts = await productsLocalRepository.getDeltaProducts(allSiesaProducts);
-                        Sku[] deltaSkus = await skusLocalRepository.getDeltaSkus(allSiesaSkus);
 
                         console.writeLine($"Productos obtenidos pagina {page}: {allSiesaProducts.Length}");
                         console.writeLine($"Variaciones obtenidos pagina {page}: {allSiesaSkus.Length}");
-
-                        foreach (Product deltaProduct in deltaProducts)
-                        {
-                            try
-                            {
-                                deltaProduct.is_active = false;
-                            }
-                            catch (VtexException vtexException)
-                            {
-                                deltaProduct.is_active = true;
-                                this.console.throwException(vtexException.Message);
-                                this.logger.writelog(vtexException);
-                            }
-                            catch (Exception exception)
-                            {
-                                deltaProduct.is_active = true;
-                                this.console.throwException(exception.Message);
-                                this.logger.writelog(exception);
-                            }
-                        }
-                        productsLocalRepository.updateProducts(deltaProducts);
-
-                        foreach (Sku deltaSku in deltaSkus)
-                        {
-                            try
-                            {
-                                deltaSku.is_active = false;
-                                if (deltaSku.vtex_id.HasValue)
-                                {
-                                    skusVtexRepository.changeSkuState((int)deltaSku.vtex_id, false);
-                                    this.inactivatedSkus.Add(deltaSku);
-                                }
-                            }
-                            catch (VtexException vtexException)
-                            {
-                                deltaSku.is_active = true;
-                                this.console.throwException(vtexException.Message);
-                                this.logger.writelog(vtexException);
-                            }
-                            catch (Exception exception)
-                            {
-                                deltaSku.is_active = true;
-                                this.console.throwException(exception.Message);
-                                this.logger.writelog(exception);
-                            }
-
-                        }
-                        skusLocalRepository.updateSkus(deltaSkus);
 
                         foreach (Product siesaProduct in allSiesaProducts)
                         {
@@ -207,7 +160,7 @@
 
                         foreach (Sku siesaSku in allSiesaSkus)
                         {
-
+                            allPagesSkus.Add(siesaSku);
                             if (this.isFailedProduct(siesaSku.product.siesa_id))
                             {
                                 continue;
@@ -261,6 +214,35 @@
                     }
                     page++;
                 }
+
+                Sku[] deltaSkus = await this.skusLocalRepository.getDeltaSkus( allPagesSkus.ToArray() );
+                foreach (Sku deltaSku in deltaSkus)
+                {
+                    try
+                    {
+                        deltaSku.is_active = false;
+                        if (deltaSku.vtex_id.HasValue)
+                        {
+                            skusVtexRepository.changeSkuState((int)deltaSku.vtex_id, false);
+                            this.inactivatedSkus.Add(deltaSku);
+                        }
+                    }
+                    catch (VtexException vtexException)
+                    {
+                        deltaSku.is_active = true;
+                        this.console.throwException(vtexException.Message);
+                        this.logger.writelog(vtexException);
+                    }
+                    catch (Exception exception)
+                    {
+                        deltaSku.is_active = true;
+                        this.console.throwException(exception.Message);
+                        this.logger.writelog(exception);
+                    }
+
+                }
+                skusLocalRepository.updateSkus(deltaSkus);
+
                 this.console.processEndstAt(processName, DateTime.Now);
             }
             catch (SiesaException exception)
