@@ -209,10 +209,14 @@
                         }
                         this.skusLocalRepository.updateSkus(inactiveSkus.ToArray());
                     }
-                    catch (Exception exception)
+                    catch (SiesaException exception)
                     {
-                        console.throwException(exception.Message);
-                        break;
+                        if(exception.status == 404){
+                            console.throwException(exception.Message);
+                            break;
+                        }else{
+                            throw exception;
+                        }
                     }
                     page++;
                 }
