@@ -25,7 +25,7 @@ namespace colanta_backend.App.Inventory.Infraestructure
             this.siesaAuth = new SiesaAuth(configuration);
         }
 
-        public async Task<Inventory[]> getAllInventoriesByWarehouse(string warehouseSiesaId, int page)
+        public async Task<Inventory[]> getAllInventories(int page)
         {
             string token = await this.siesaAuth.getToken();
             string endpoint = $"/inventario?pagina={page}";
@@ -42,7 +42,6 @@ namespace colanta_backend.App.Inventory.Infraestructure
             foreach (SiesaInventoryDto siesaInventoryDto in siesaInventoriesDto.inventario_almacen) 
             {
                 Inventory inventory = siesaInventoryDto.getInventoryFromDto();
-                inventory.warehouse_siesa_id = warehouseSiesaId;
                 inventories.Add(inventory);
             }
             return inventories.ToArray();

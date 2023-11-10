@@ -3,6 +3,6 @@
     using System.Threading.Tasks;
     public interface InventoriesSiesaRepository
     {
-        Task<Inventory[]> getAllInventoriesByWarehouse(string warehouseSiesaId, int page);
+        Task<Inventory[]> getAllInventories(int page);
     }
 }

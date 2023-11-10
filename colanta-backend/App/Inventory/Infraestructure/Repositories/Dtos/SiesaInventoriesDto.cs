@@ -12,13 +12,15 @@
         public string? id_variacion { get; set; }
         public int cantidad { get; set; }
         public string negocio { get; set; }
+        public string id_bodega { get; set; }
 
         public Inventory getInventoryFromDto()
         {
             Inventory inventory = new Inventory
             {
                 quantity = cantidad,
-                business = negocio
+                business = negocio,
+                warehouse_siesa_id = id_bodega
             };
             if (id_variacion != null)
             {

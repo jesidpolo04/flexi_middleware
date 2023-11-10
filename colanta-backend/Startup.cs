@@ -171,7 +171,7 @@ namespace colanta_backend
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "colanta_backend", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "flexi_middleware", Version = "v1" });
             });
         }
 
@@ -182,7 +182,7 @@ namespace colanta_backend
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "colanta_backend v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Flexi Middleware"));
             }
 
             app.UseHttpsRedirection();
