@@ -54,14 +54,14 @@ namespace colanta_backend
             services.AddTransient<App.Users.Domain.UsersSiesaRepository, App.Users.Infraestructure.UsersSiesaRepository>();
             services.AddTransient<App.Users.Domain.UsersVtexRepository, App.Users.Infraestructure.UsersVtexRepository>();
             services.AddTransient<App.Users.Domain.RegisterUserService>();
-            
+
             //Dependencies Injections Brands
             services.AddTransient<BrandsRepository, EFBrandsRepository>();
             services.AddTransient<BrandsVtexRepository, VtexBrandsRepository>();
             services.AddTransient<IRenderBrandsMail, RenderBrandsMail>();
             services.AddTransient<App.Brands.Jobs.RenderBrands>();
             //Dependencies Injections Cattegories
-            services.AddTransient<App.Categories.Domain.CategoriesRepository , App.Categories.Infraestructure.CategoriesEFRepository>(); //s
+            services.AddTransient<App.Categories.Domain.CategoriesRepository, App.Categories.Infraestructure.CategoriesEFRepository>(); //s
             services.AddTransient<App.Categories.Domain.CategoriesVtexRepository, App.Categories.Infraestructure.CategoriesVtexRepository>();
             services.AddTransient<App.Categories.Domain.CategoriesSiesaRepository, App.Categories.Infraestructure.CategoriesMockSiesaRepository>();//
             services.AddTransient<App.Categories.Domain.IRenderCategoriesMail, App.Categories.Infraestructure.RenderCategoriesMail>();
@@ -69,7 +69,7 @@ namespace colanta_backend
             services.AddTransient<ActivateAllCategories>();
             services.AddTransient<MapFamiliesToStore>();
             //Dependencies Injections Products
-            services.AddTransient<App.Products.Domain.ProductsRepository , App.Products.Infraestructure.ProductsEFRepository>();
+            services.AddTransient<App.Products.Domain.ProductsRepository, App.Products.Infraestructure.ProductsEFRepository>();
             services.AddTransient<App.Products.Domain.ProductsVtexRepository, App.Products.Infraestructure.ProductsVtexRepository>();
             services.AddTransient<App.Products.Domain.SkusRepository, App.Products.Infraestructure.SkusEFRepository>();
             services.AddTransient<App.Products.Domain.SkusVtexRepository, App.Products.Infraestructure.SkusVtexRepository>();
@@ -85,7 +85,7 @@ namespace colanta_backend
             //Dependencies Injections Specifications
             services.AddTransient<App.Specifications.Domain.SpecificationsVtexRepository, App.Specifications.Infraestructure.SpecificationsVtexRepository>();
             //Dependencies Injections Prices
-            services.AddTransient<App.Prices.Domain.PricesRepository , App.Prices.Infraestructure.PricesEFRepository>();
+            services.AddTransient<App.Prices.Domain.PricesRepository, App.Prices.Infraestructure.PricesEFRepository>();
             services.AddTransient<App.Prices.Domain.PricesVtexRepository, App.Prices.Infraestructure.PricesVtexRepository>();
             services.AddTransient<App.Prices.Domain.PricesSiesaRepository, App.Prices.Infraestructure.PricesSiesaRepository>();
             services.AddTransient<App.Prices.Domain.IRenderPricesMail, App.Prices.Infraestructure.RenderPricesMail>();
@@ -181,9 +181,11 @@ namespace colanta_backend
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Flexi Middleware"));
+
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Flexi Middleware"));
 
             app.UseHttpsRedirection();
 
