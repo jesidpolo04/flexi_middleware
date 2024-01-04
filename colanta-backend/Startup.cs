@@ -156,7 +156,7 @@ namespace colanta_backend
 
             services.AddHostedService<App.Products.Jobs.ScheduledRenderProductsAndSkus>();
             //services.AddHostedService<ScheduledUpToVtexNullProductsAndSkus>();
-            //services.AddHostedService<ScheduledUpdateProductsAndSkusStates>();
+            services.AddHostedService<App.Products.Jobs.ScheduledUpdateProductsAndSkusStates>();
 
             services.AddHostedService<ScheduledRenderPrices>();
             //services.AddHostedService<ScheduledNotifyMissingPrices>();

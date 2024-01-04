@@ -11,7 +11,7 @@
 
         private readonly CrontabSchedule _crontabSchedule;
         private DateTime _nextRun;
-        private const string Schedule = "0 1 7,11,16,19 * * *";
+        private const string Schedule = "0 1 8,12,17,20 * * *";
         private RenderCategories renderCategories;
         private ILogger logger;
         public ScheduledRenderCategories(RenderCategories renderCategories, ILogger logger)

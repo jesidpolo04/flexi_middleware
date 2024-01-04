@@ -11,7 +11,7 @@ namespace colanta_backend.App.Products.Jobs
     {
         private readonly CrontabSchedule _crontabSchedule;
         private DateTime _nextRun;
-        private const string Schedule = "0 2 7,11,16,19 * * *";
+        private const string Schedule = "0 2 8,12,17,20 * * *";
         private RenderProductsAndSkus renderProductsAndSkus;
         private ILogger logger;
         public ScheduledRenderProductsAndSkus(RenderProductsAndSkus renderProductsAndSkus, ILogger logger)
